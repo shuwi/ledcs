@@ -1,0 +1,9 @@
+D:\svn\LedScreen\DAO\bin\x64\Debug\DAO.dll
+D:\svn\LedScreen\DAO\bin\x64\Debug\DAO.pdb
+D:\svn\LedScreen\DAO\bin\x64\Debug\MySql.Data.dll
+D:\svn\LedScreen\DAO\bin\x64\Debug\MySql.Data.xml
+D:\svn\LedScreen\DAO\obj\x64\Debug\DAO.csprojResolveAssemblyReference.cache
+D:\svn\LedScreen\DAO\obj\x64\Debug\DAO.csproj.CoreCompileInputs.cache
+D:\svn\LedScreen\DAO\obj\x64\Debug\DAO.csproj.CopyComplete
+D:\svn\LedScreen\DAO\obj\x64\Debug\DAO.dll
+D:\svn\LedScreen\DAO\obj\x64\Debug\DAO.pdb

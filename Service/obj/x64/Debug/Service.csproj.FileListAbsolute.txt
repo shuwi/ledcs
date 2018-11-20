@@ -1,0 +1,13 @@
+D:\svn\LedScreen\Service\bin\x64\Debug\Service.dll
+D:\svn\LedScreen\Service\bin\x64\Debug\Service.pdb
+D:\svn\LedScreen\Service\bin\x64\Debug\DAO.dll
+D:\svn\LedScreen\Service\bin\x64\Debug\MySql.Data.dll
+D:\svn\LedScreen\Service\bin\x64\Debug\DAO.pdb
+D:\svn\LedScreen\Service\bin\x64\Debug\MySql.Data.xml
+D:\svn\LedScreen\Service\obj\x64\Debug\Service.csprojResolveAssemblyReference.cache
+D:\svn\LedScreen\Service\obj\x64\Debug\Service.csproj.CoreCompileInputs.cache
+D:\svn\LedScreen\Service\obj\x64\Debug\Service.csproj.CopyComplete
+D:\svn\LedScreen\Service\obj\x64\Debug\Service.dll
+D:\svn\LedScreen\Service\obj\x64\Debug\Service.pdb
+D:\svn\LedScreen\Service\bin\x64\Debug\Model.dll
+D:\svn\LedScreen\Service\bin\x64\Debug\Model.pdb

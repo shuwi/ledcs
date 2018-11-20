@@ -1,0 +1,17 @@
+C:\develop\LedScreen\Model\bin\Debug\Model.dll
+C:\develop\LedScreen\Model\bin\Debug\Model.pdb
+C:\develop\LedScreen\Model\obj\Debug\Model.csprojResolveAssemblyReference.cache
+C:\develop\LedScreen\Model\obj\Debug\Model.dll
+C:\develop\LedScreen\Model\obj\Debug\Model.pdb
+D:\svn\LedScreen\Model\bin\Debug\Model.dll
+D:\svn\LedScreen\Model\bin\Debug\Model.pdb
+D:\svn\LedScreen\Model\obj\Debug\Model.csproj.CoreCompileInputs.cache
+D:\svn\LedScreen\Model\obj\Debug\Model.dll
+D:\svn\LedScreen\Model\obj\Debug\Model.pdb
+D:\svn\LedScreen\Model\obj\Debug\Model.csprojAssemblyReference.cache
+D:\VS\LedScreen\Model\bin\Debug\Model.dll
+D:\VS\LedScreen\Model\bin\Debug\Model.pdb
+D:\VS\LedScreen\Model\obj\Debug\Model.csprojAssemblyReference.cache
+D:\VS\LedScreen\Model\obj\Debug\Model.csproj.CoreCompileInputs.cache
+D:\VS\LedScreen\Model\obj\Debug\Model.dll
+D:\VS\LedScreen\Model\obj\Debug\Model.pdb
