@@ -53,17 +53,24 @@ namespace LedScreen
             this.timer4 = new System.Windows.Forms.Timer(this.components);
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel8 = new System.Windows.Forms.Panel();
+            this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
+            this.nowoutdate = new System.Windows.Forms.Label();
+            this.nowouttime = new System.Windows.Forms.Label();
+            this.nowoutgroup = new System.Windows.Forms.Label();
+            this.nowoutname = new System.Windows.Forms.Label();
+            this.nowoutjob = new System.Windows.Forms.Label();
+            this.outuser = new System.Windows.Forms.PictureBox();
             this.label10 = new System.Windows.Forms.Label();
             this.panel7 = new System.Windows.Forms.Panel();
             this.label8 = new System.Windows.Forms.Label();
             this.panel6 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-            this.label12 = new System.Windows.Forms.Label();
-            this.label13 = new System.Windows.Forms.Label();
-            this.ingroup = new System.Windows.Forms.Label();
+            this.nowindate = new System.Windows.Forms.Label();
+            this.nowintime = new System.Windows.Forms.Label();
+            this.nowingroup = new System.Windows.Forms.Label();
             this.nowinname = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
-            this.inuserpictureBox = new System.Windows.Forms.PictureBox();
+            this.nowinjob = new System.Windows.Forms.Label();
+            this.inuser = new System.Windows.Forms.PictureBox();
             this.label9 = new System.Windows.Forms.Label();
             this.panel5 = new System.Windows.Forms.Panel();
             this.slogen = new System.Windows.Forms.Label();
@@ -85,20 +92,15 @@ namespace LedScreen
             this.timer7 = new System.Windows.Forms.Timer(this.components);
             this.timer8 = new System.Windows.Forms.Timer(this.components);
             this.timer9 = new System.Windows.Forms.Timer(this.components);
-            this.outuserpictureBox = new System.Windows.Forms.PictureBox();
-            this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
-            this.label14 = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
-            this.label17 = new System.Windows.Forms.Label();
-            this.label18 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel8.SuspendLayout();
+            this.tableLayoutPanel3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.outuser)).BeginInit();
             this.panel7.SuspendLayout();
             this.panel6.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.inuserpictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.inuser)).BeginInit();
             this.panel5.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel4.SuspendLayout();
@@ -106,8 +108,6 @@ namespace LedScreen
             ((System.ComponentModel.ISupportInitialize)(this.wpicture)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.outuserpictureBox)).BeginInit();
-            this.tableLayoutPanel3.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnSetting
@@ -381,12 +381,94 @@ namespace LedScreen
             // 
             this.panel8.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(32)))), ((int)(((byte)(48)))));
             this.panel8.Controls.Add(this.tableLayoutPanel3);
-            this.panel8.Controls.Add(this.outuserpictureBox);
+            this.panel8.Controls.Add(this.outuser);
             this.panel8.Controls.Add(this.label10);
             this.panel8.Location = new System.Drawing.Point(656, 133);
             this.panel8.Name = "panel8";
             this.panel8.Size = new System.Drawing.Size(250, 455);
             this.panel8.TabIndex = 22;
+            // 
+            // tableLayoutPanel3
+            // 
+            this.tableLayoutPanel3.ColumnCount = 2;
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel3.Controls.Add(this.nowoutdate, 0, 1);
+            this.tableLayoutPanel3.Controls.Add(this.nowouttime, 1, 1);
+            this.tableLayoutPanel3.Controls.Add(this.nowoutgroup, 0, 2);
+            this.tableLayoutPanel3.Controls.Add(this.nowoutname, 0, 0);
+            this.tableLayoutPanel3.Controls.Add(this.nowoutjob, 1, 0);
+            this.tableLayoutPanel3.Location = new System.Drawing.Point(45, 298);
+            this.tableLayoutPanel3.Name = "tableLayoutPanel3";
+            this.tableLayoutPanel3.RowCount = 3;
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(166, 126);
+            this.tableLayoutPanel3.TabIndex = 12;
+            // 
+            // nowoutdate
+            // 
+            this.nowoutdate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.nowoutdate.AutoSize = true;
+            this.nowoutdate.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.nowoutdate.ForeColor = System.Drawing.Color.Cyan;
+            this.nowoutdate.Location = new System.Drawing.Point(80, 42);
+            this.nowoutdate.Name = "nowoutdate";
+            this.nowoutdate.Size = new System.Drawing.Size(0, 20);
+            this.nowoutdate.TabIndex = 2;
+            // 
+            // nowouttime
+            // 
+            this.nowouttime.AutoSize = true;
+            this.nowouttime.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.nowouttime.ForeColor = System.Drawing.Color.Cyan;
+            this.nowouttime.Location = new System.Drawing.Point(86, 42);
+            this.nowouttime.Name = "nowouttime";
+            this.nowouttime.Size = new System.Drawing.Size(0, 21);
+            this.nowouttime.TabIndex = 3;
+            // 
+            // nowoutgroup
+            // 
+            this.nowoutgroup.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.nowoutgroup.AutoSize = true;
+            this.nowoutgroup.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.nowoutgroup.ForeColor = System.Drawing.Color.White;
+            this.nowoutgroup.Location = new System.Drawing.Point(80, 84);
+            this.nowoutgroup.Name = "nowoutgroup";
+            this.nowoutgroup.Size = new System.Drawing.Size(0, 21);
+            this.nowoutgroup.TabIndex = 4;
+            // 
+            // nowoutname
+            // 
+            this.nowoutname.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.nowoutname.AutoSize = true;
+            this.nowoutname.Font = new System.Drawing.Font("微软雅黑", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.nowoutname.ForeColor = System.Drawing.Color.Cyan;
+            this.nowoutname.Location = new System.Drawing.Point(80, 0);
+            this.nowoutname.Name = "nowoutname";
+            this.nowoutname.Size = new System.Drawing.Size(0, 25);
+            this.nowoutname.TabIndex = 0;
+            this.nowoutname.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // nowoutjob
+            // 
+            this.nowoutjob.AutoSize = true;
+            this.nowoutjob.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.nowoutjob.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.nowoutjob.Location = new System.Drawing.Point(86, 0);
+            this.nowoutjob.Name = "nowoutjob";
+            this.nowoutjob.Size = new System.Drawing.Size(0, 20);
+            this.nowoutjob.TabIndex = 1;
+            // 
+            // outuser
+            // 
+            this.outuser.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.outuser.Location = new System.Drawing.Point(45, 48);
+            this.outuser.Name = "outuser";
+            this.outuser.Size = new System.Drawing.Size(166, 217);
+            this.outuser.TabIndex = 11;
+            this.outuser.TabStop = false;
             // 
             // label10
             // 
@@ -417,15 +499,15 @@ namespace LedScreen
             this.label8.ForeColor = System.Drawing.SystemColors.ActiveCaption;
             this.label8.Location = new System.Drawing.Point(21, 5);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(93, 20);
+            this.label8.Size = new System.Drawing.Size(107, 20);
             this.label8.TabIndex = 9;
-            this.label8.Text = "历史进场人员";
+            this.label8.Text = "历史进出场人员";
             // 
             // panel6
             // 
             this.panel6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(32)))), ((int)(((byte)(48)))));
             this.panel6.Controls.Add(this.tableLayoutPanel2);
-            this.panel6.Controls.Add(this.inuserpictureBox);
+            this.panel6.Controls.Add(this.inuser);
             this.panel6.Controls.Add(this.label9);
             this.panel6.Location = new System.Drawing.Point(364, 133);
             this.panel6.Name = "panel6";
@@ -437,11 +519,11 @@ namespace LedScreen
             this.tableLayoutPanel2.ColumnCount = 2;
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel2.Controls.Add(this.label12, 0, 1);
-            this.tableLayoutPanel2.Controls.Add(this.label13, 1, 1);
-            this.tableLayoutPanel2.Controls.Add(this.ingroup, 0, 2);
+            this.tableLayoutPanel2.Controls.Add(this.nowindate, 0, 1);
+            this.tableLayoutPanel2.Controls.Add(this.nowintime, 1, 1);
+            this.tableLayoutPanel2.Controls.Add(this.nowingroup, 0, 2);
             this.tableLayoutPanel2.Controls.Add(this.nowinname, 0, 0);
-            this.tableLayoutPanel2.Controls.Add(this.label11, 1, 0);
+            this.tableLayoutPanel2.Controls.Add(this.nowinjob, 1, 0);
             this.tableLayoutPanel2.Location = new System.Drawing.Point(41, 298);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 3;
@@ -451,40 +533,37 @@ namespace LedScreen
             this.tableLayoutPanel2.Size = new System.Drawing.Size(166, 126);
             this.tableLayoutPanel2.TabIndex = 2;
             // 
-            // label12
+            // nowindate
             // 
-            this.label12.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label12.AutoSize = true;
-            this.label12.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label12.ForeColor = System.Drawing.Color.Cyan;
-            this.label12.Location = new System.Drawing.Point(11, 42);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(69, 20);
-            this.label12.TabIndex = 2;
-            this.label12.Text = "10月29日";
+            this.nowindate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.nowindate.AutoSize = true;
+            this.nowindate.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.nowindate.ForeColor = System.Drawing.Color.Cyan;
+            this.nowindate.Location = new System.Drawing.Point(80, 42);
+            this.nowindate.Name = "nowindate";
+            this.nowindate.Size = new System.Drawing.Size(0, 20);
+            this.nowindate.TabIndex = 2;
             // 
-            // label13
+            // nowintime
             // 
-            this.label13.AutoSize = true;
-            this.label13.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label13.ForeColor = System.Drawing.Color.Cyan;
-            this.label13.Location = new System.Drawing.Point(86, 42);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(50, 21);
-            this.label13.TabIndex = 3;
-            this.label13.Text = "13:47";
+            this.nowintime.AutoSize = true;
+            this.nowintime.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.nowintime.ForeColor = System.Drawing.Color.Cyan;
+            this.nowintime.Location = new System.Drawing.Point(86, 42);
+            this.nowintime.Name = "nowintime";
+            this.nowintime.Size = new System.Drawing.Size(0, 21);
+            this.nowintime.TabIndex = 3;
             // 
-            // ingroup
+            // nowingroup
             // 
-            this.ingroup.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ingroup.AutoSize = true;
-            this.ingroup.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.ingroup.ForeColor = System.Drawing.Color.White;
-            this.ingroup.Location = new System.Drawing.Point(6, 84);
-            this.ingroup.Name = "ingroup";
-            this.ingroup.Size = new System.Drawing.Size(74, 21);
-            this.ingroup.TabIndex = 4;
-            this.ingroup.Text = "塔吊班组";
+            this.nowingroup.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.nowingroup.AutoSize = true;
+            this.nowingroup.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.nowingroup.ForeColor = System.Drawing.Color.White;
+            this.nowingroup.Location = new System.Drawing.Point(80, 84);
+            this.nowingroup.Name = "nowingroup";
+            this.nowingroup.Size = new System.Drawing.Size(0, 21);
+            this.nowingroup.TabIndex = 4;
             // 
             // nowinname
             // 
@@ -492,32 +571,30 @@ namespace LedScreen
             this.nowinname.AutoSize = true;
             this.nowinname.Font = new System.Drawing.Font("微软雅黑", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.nowinname.ForeColor = System.Drawing.Color.Cyan;
-            this.nowinname.Location = new System.Drawing.Point(11, 0);
+            this.nowinname.Location = new System.Drawing.Point(80, 0);
             this.nowinname.Name = "nowinname";
-            this.nowinname.Size = new System.Drawing.Size(69, 25);
+            this.nowinname.Size = new System.Drawing.Size(0, 25);
             this.nowinname.TabIndex = 0;
-            this.nowinname.Text = "韩春江";
             this.nowinname.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
-            // label11
+            // nowinjob
             // 
-            this.label11.AutoSize = true;
-            this.label11.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label11.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.label11.Location = new System.Drawing.Point(86, 0);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(51, 20);
-            this.label11.TabIndex = 1;
-            this.label11.Text = "塔吊工";
+            this.nowinjob.AutoSize = true;
+            this.nowinjob.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.nowinjob.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.nowinjob.Location = new System.Drawing.Point(86, 0);
+            this.nowinjob.Name = "nowinjob";
+            this.nowinjob.Size = new System.Drawing.Size(0, 20);
+            this.nowinjob.TabIndex = 1;
             // 
-            // inuserpictureBox
+            // inuser
             // 
-            this.inuserpictureBox.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.inuserpictureBox.Location = new System.Drawing.Point(41, 49);
-            this.inuserpictureBox.Name = "inuserpictureBox";
-            this.inuserpictureBox.Size = new System.Drawing.Size(166, 217);
-            this.inuserpictureBox.TabIndex = 1;
-            this.inuserpictureBox.TabStop = false;
+            this.inuser.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.inuser.Location = new System.Drawing.Point(41, 49);
+            this.inuser.Name = "inuser";
+            this.inuser.Size = new System.Drawing.Size(166, 217);
+            this.inuser.TabIndex = 1;
+            this.inuser.TabStop = false;
             // 
             // label9
             // 
@@ -744,93 +821,6 @@ namespace LedScreen
             this.timer9.Interval = 60000;
             this.timer9.Tick += new System.EventHandler(this.timer9_Tick);
             // 
-            // outuserpictureBox
-            // 
-            this.outuserpictureBox.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.outuserpictureBox.Location = new System.Drawing.Point(45, 48);
-            this.outuserpictureBox.Name = "outuserpictureBox";
-            this.outuserpictureBox.Size = new System.Drawing.Size(166, 217);
-            this.outuserpictureBox.TabIndex = 11;
-            this.outuserpictureBox.TabStop = false;
-            // 
-            // tableLayoutPanel3
-            // 
-            this.tableLayoutPanel3.ColumnCount = 2;
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel3.Controls.Add(this.label14, 0, 1);
-            this.tableLayoutPanel3.Controls.Add(this.label15, 1, 1);
-            this.tableLayoutPanel3.Controls.Add(this.label16, 0, 2);
-            this.tableLayoutPanel3.Controls.Add(this.label17, 0, 0);
-            this.tableLayoutPanel3.Controls.Add(this.label18, 1, 0);
-            this.tableLayoutPanel3.Location = new System.Drawing.Point(45, 298);
-            this.tableLayoutPanel3.Name = "tableLayoutPanel3";
-            this.tableLayoutPanel3.RowCount = 3;
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(166, 126);
-            this.tableLayoutPanel3.TabIndex = 12;
-            // 
-            // label14
-            // 
-            this.label14.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label14.AutoSize = true;
-            this.label14.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label14.ForeColor = System.Drawing.Color.Cyan;
-            this.label14.Location = new System.Drawing.Point(11, 42);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(69, 20);
-            this.label14.TabIndex = 2;
-            this.label14.Text = "10月29日";
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label15.ForeColor = System.Drawing.Color.Cyan;
-            this.label15.Location = new System.Drawing.Point(86, 42);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(50, 21);
-            this.label15.TabIndex = 3;
-            this.label15.Text = "13:47";
-            // 
-            // label16
-            // 
-            this.label16.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label16.AutoSize = true;
-            this.label16.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label16.ForeColor = System.Drawing.Color.White;
-            this.label16.Location = new System.Drawing.Point(6, 84);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(74, 21);
-            this.label16.TabIndex = 4;
-            this.label16.Text = "塔吊班组";
-            // 
-            // label17
-            // 
-            this.label17.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label17.AutoSize = true;
-            this.label17.Font = new System.Drawing.Font("微软雅黑", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label17.ForeColor = System.Drawing.Color.Cyan;
-            this.label17.Location = new System.Drawing.Point(11, 0);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(69, 25);
-            this.label17.TabIndex = 0;
-            this.label17.Text = "韩春江";
-            this.label17.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label18.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.label18.Location = new System.Drawing.Point(86, 0);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(51, 20);
-            this.label18.TabIndex = 1;
-            this.label18.Text = "塔吊工";
-            // 
             // Home
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -848,13 +838,16 @@ namespace LedScreen
             this.panel1.ResumeLayout(false);
             this.panel8.ResumeLayout(false);
             this.panel8.PerformLayout();
+            this.tableLayoutPanel3.ResumeLayout(false);
+            this.tableLayoutPanel3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.outuser)).EndInit();
             this.panel7.ResumeLayout(false);
             this.panel7.PerformLayout();
             this.panel6.ResumeLayout(false);
             this.panel6.PerformLayout();
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.inuserpictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.inuser)).EndInit();
             this.panel5.ResumeLayout(false);
             this.panel5.PerformLayout();
             this.panel3.ResumeLayout(false);
@@ -868,9 +861,6 @@ namespace LedScreen
             this.tableLayoutPanel1.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.outuserpictureBox)).EndInit();
-            this.tableLayoutPanel3.ResumeLayout(false);
-            this.tableLayoutPanel3.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -922,20 +912,20 @@ namespace LedScreen
         private System.Windows.Forms.Timer timer9;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.Label nowinname;
-        private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.Label label13;
-        private System.Windows.Forms.Label ingroup;
-        private System.Windows.Forms.PictureBox inuserpictureBox;
+        private System.Windows.Forms.Label nowinjob;
+        private System.Windows.Forms.Label nowindate;
+        private System.Windows.Forms.Label nowintime;
+        private System.Windows.Forms.Label nowingroup;
+        private System.Windows.Forms.PictureBox inuser;
         private System.Windows.Forms.Panel panel8;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
-        private System.Windows.Forms.Label label14;
-        private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.Label label16;
-        private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.Label label18;
-        private System.Windows.Forms.PictureBox outuserpictureBox;
+        private System.Windows.Forms.Label nowoutdate;
+        private System.Windows.Forms.Label nowouttime;
+        private System.Windows.Forms.Label nowoutgroup;
+        private System.Windows.Forms.Label nowoutname;
+        private System.Windows.Forms.Label nowoutjob;
+        private System.Windows.Forms.PictureBox outuser;
     }
 }
 

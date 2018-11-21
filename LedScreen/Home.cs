@@ -54,6 +54,8 @@ namespace LedScreen
 
         //出勤人员头像图片数组
         private List<Image> images = new List<Image>();
+        static DataTable dtb = new DataTable();
+        private DataRow currentUserInfo = dtb.NewRow();
         string pname = "";
 
         double formWidth;//窗体原始宽度
@@ -157,7 +159,7 @@ namespace LedScreen
 
             GetcountFromURL(pname);
             UpadteAllAtUsers(pname);
-            //this.lstBoxWorker.SelectedIndex = 0;
+
             GetAllInitInfo(this.Controls[0]);
             this.GetWeatherAsync();
         }
@@ -172,28 +174,49 @@ namespace LedScreen
             if (dt.Rows.Count <= 0)
                 return;
             tlp.Controls.Clear();
-            for (int i = 0; i < dt.Rows.Count; i++)
+            int i = 0;
+            for (; i < dt.Rows.Count; i++)
             {
-
-                Label lab = new Label();
-                string countsql = string.Format("select count(id) as count from worker where groupname = '{0}' and job = '{1}' and checkinState = 1 and DATE(checkinTime) = '{2}';",
-                    pname,
-                    dt.Rows[i]["job"].ToString(),
-                    DateTime.Now.ToString("yyyy-MM-dd")
-
-                    );
-                DataTable dtt = SQLiteDBHelper.ExecuteDataTable(countsql);
-                string output = "";
-                if (dtt.Rows.Count > 0)
-                    output = "\n考勤人数：" + dtt.Rows[0]["count"].ToString();
-                lab.Text = dt.Rows[i]["job"].ToString() + output;
-                lab.AutoSize = true;
-                FontFamily ff = new FontFamily("微软雅黑");
-                lab.Font = new Font(ff, 15, FontStyle.Regular, GraphicsUnit.World);
-                //通过Anchor 设置Label 列居中
-                lab.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-                tlp.Controls.Add(lab);
+                
+                if (i > 9)
+                {
+                    Console.WriteLine(String.Format("Math.Ceiling((double)dt.Rows.Count / 10) = {0}", Math.Ceiling((double)dt.Rows.Count / 10)));
+                    /*
+                    for (int j = 0; j < Math.Ceiling((double)dt.Rows.Count / 10); j++)
+                    {
+                        Console.WriteLine("本地第" + j + "次休眠");
+                        System.Threading.Thread.Sleep(10000);
+                        for (; i < dt.Rows.Count; i++)
+                        {
+                            jobLableGroup(dt, i);
+                        }
+                    }
+                    */
+                }
+                else
+                    jobLableGroup(dt, i);
             }
+
+        }
+        private void jobLableGroup(DataTable dt,int i)
+        {
+            Label lab = new Label();
+            string countsql = string.Format("select count(id) as count from worker where groupname = '{0}' and job = '{1}' and DATE(checkinTime) = '{2}';",
+                pname,
+                dt.Rows[i]["job"].ToString(),
+                DateTime.Now.ToString("yyyy-MM-dd")
+                );
+            DataTable dtt = SQLiteDBHelper.ExecuteDataTable(countsql);
+            string output = "";
+            if (dtt.Rows.Count > 0)
+                output = "\n考勤人数：" + dtt.Rows[0]["count"].ToString();
+            lab.Text = dt.Rows[i]["job"].ToString() + output;
+            lab.AutoSize = true;
+            FontFamily ff = new FontFamily("微软雅黑");
+            lab.Font = new Font(ff, 16, FontStyle.Regular, GraphicsUnit.World);
+            //通过Anchor 设置Label 列居中
+            lab.Anchor = (AnchorStyles.Left | AnchorStyles.Right);
+            tlp.Controls.Add(lab);
         }
         /// <summary>
         /// 线上查询各工种考勤统计信息
@@ -216,25 +239,44 @@ namespace LedScreen
                 Record searchResult = result.ToObject<Record>();
                 searchResults.Add(searchResult);
             }
-
-            foreach (Record r in searchResults)
+            int i = 0;
+            for (; i < searchResults.Count; i++)
             {
-
-                Label lab = new Label();
-                string output = "";
-
-                output = "\n考勤人数：" + r.count.ToString();
-                lab.Text = r.workKindName + output;
-                lab.AutoSize = true;
-                FontFamily ff = new FontFamily("微软雅黑");
-                lab.Font = new Font(ff, 22, FontStyle.Regular, GraphicsUnit.World);
-                //通过Anchor 设置Label 列居中
-                lab.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-                tlp.Controls.Add(lab);
+                
+                if (i > 9)
+                {
+                    /*
+                    for (int j = 0; j < Math.Ceiling((double)searchResults.Count / 10); j++)
+                    {
+                        Console.WriteLine("第" + j + "次休眠");
+                        System.Threading.Thread.Sleep(10000);
+                        for (; i < searchResults.Count; i++)
+                        {
+                            setJobCountGroup(searchResults[i]);
+                        }
+                    }
+                    */
+                }
+                else
+                    setJobCountGroup(searchResults[i]);
             }
 
-        }
 
+        }
+        private void setJobCountGroup(Record r)
+        {
+            Label lab = new Label();
+            string output = "";
+
+            output = "\n考勤人数：" + r.count.ToString();
+            lab.Text = r.workKindName + output;
+            lab.AutoSize = true;
+            FontFamily ff = new FontFamily("微软雅黑");
+            lab.Font = new Font(ff, 16, FontStyle.Regular, GraphicsUnit.World);
+            //通过Anchor 设置Label 列居中
+            lab.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            tlp.Controls.Add(lab);
+        }
         /// <summary>
         /// 在线获取项目考勤人数
         /// </summary>
@@ -411,7 +453,18 @@ namespace LedScreen
                 {
                     DataRow row = table.Rows[i];
                     SerialPort port = new SerialPort();
-                    SerialDataReceiveHandler handler = new SerialDataReceiveHandler(port, this, Convert.ToInt32(row["tag"].ToString()), this.lstBoxWorker, images, this.inuserpictureBox, this.outuserpictureBox);
+                    SerialDataReceiveHandler handler = new SerialDataReceiveHandler(port, this, Convert.ToInt32(row["tag"].ToString()), this.lstBoxWorker, images, this.inuser,
+                    this.outuser,
+                    this.nowinname,
+                    this.nowoutname,
+                    this.nowindate,
+                    this.nowoutdate,
+                    this.nowingroup,
+                    this.nowoutgroup,
+                    this.nowintime,
+                    this.nowouttime,
+                    this.nowinjob,
+                    this.nowoutjob);
 
                     port.PortName = row["port"].ToString();
                     port.BaudRate = Convert.ToInt32(row["baud_rate"].ToString());
@@ -559,7 +612,7 @@ namespace LedScreen
         {
             this.labelTime.Text = DateTime.Now.ToString("yyyy年 MM月dd日 dddd");
         }
-
+        //工人考勤轮播绘图事件
         private void lstBoxWorker_DrawItem(object sender, DrawItemEventArgs e)
         {
             Brush myBrush = new SolidBrush(Color.FromArgb(32, 32, 48));
@@ -600,8 +653,7 @@ namespace LedScreen
             strFormat.LineAlignment = StringAlignment.Center;
             e.Graphics.DrawString(lstBoxWorker.Items[e.Index].ToString(), e.Font, new SolidBrush(e.ForeColor), textRect, strFormat);
             this.lstBoxWorker.ScrollAlwaysVisible = false;
-            //this.lstBoxWorker.SelectedIndex = this.lstBoxWorker.Items.Count - 1;
-            //this.lstBoxWorker.SelectedIndex = -1;
+
         }
 
 
@@ -805,14 +857,12 @@ namespace LedScreen
         /// <param name="e"></param>
         private void timer3_Tick(object sender, EventArgs e)
         {
-            // Console.WriteLine("-------------");
-            //Console.WriteLine(CommonUtil.GetConfigValue("mode"));
-            //Console.WriteLine(CommonUtil.GetConfigValue("mode") == "local");
-            //Console.WriteLine("+++++++++++++");
+            /*
             if (CommonUtil.GetConfigValue("mode") == "local")
                 UpdateWorkerJobCount();
             else
                 UpdateWorkerJobCountOnlineAsync();
+                */
         }
         /// <summary>
         /// 定时更新考勤人数
