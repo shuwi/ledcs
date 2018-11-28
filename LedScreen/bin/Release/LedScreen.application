@@ -14,14 +14,14 @@
     <framework targetVersion="4.5.2" profile="Full" supportedRuntime="4.0.30319" />
   </compatibleFrameworks>
   <dependency>
-    <dependentAssembly dependencyType="install" codebase="LedScreen.exe.manifest" size="17923">
+    <dependentAssembly dependencyType="install" codebase="LedScreen.exe.manifest" size="17925">
       <assemblyIdentity name="LedScreen.exe" version="1.0.0.2" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>JaRevQrTKmolwya0LEgVs6hBGY2VYoZrA3DkaPdzS6w=</dsig:DigestValue>
+        <dsig:DigestValue>uZgL3+njMYjA6ZNFZjIaW3IF/0gndaftVICqxDImaV8=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

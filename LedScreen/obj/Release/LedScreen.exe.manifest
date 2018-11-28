@@ -49,7 +49,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>rcSotWynbOu7Y6mvYXhw6WGF+bKTEApMGMxlb4RNIIQ=</dsig:DigestValue>
+        <dsig:DigestValue>96Q8BlQXKvsyPkIjlJEZ7p51VPqS671FMJIA1b7nwEU=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -78,26 +78,26 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="LedScreen.exe" size="329216">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="LedScreen.exe" size="467456">
       <assemblyIdentity name="LedScreen" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>t9QVuhO2Y7woyGbgVGUtlreg0yWkEtAvREiokDnzYaI=</dsig:DigestValue>
+        <dsig:DigestValue>mxkYZ51WjtBP5uJzorFPZdGO7N7WEctUysYoCFLkGZY=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Model.dll" size="18432">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Model.dll" size="20480">
       <assemblyIdentity name="Model" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>XVhf1wFvyTVvmrnhiAsLzkxSM2RWRen5jtwnbOyr8EY=</dsig:DigestValue>
+        <dsig:DigestValue>s/qlEIIC5nTX7fgvBEDpL0N96gQf1BphvmSfzZwY8ow=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -114,14 +114,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Service.dll" size="24576">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Service.dll" size="25088">
       <assemblyIdentity name="Service" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>mVABUmaQtJNC8tNN0LBFSp+YmH19U1ZxCK8jN6UZ44M=</dsig:DigestValue>
+        <dsig:DigestValue>Ut+hzFgE0KnapFP8Q3RwLj+LQlJ8NkEH8ofi+WB1pUI=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -332,13 +332,13 @@
       <dsig:DigestValue>hWDuGMOyzRooDmg+J7dWIRY0fLYzrfNRWfCiKzS12OI=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="LedScreen.exe.config" size="3859">
+  <file name="LedScreen.exe.config" size="409436">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>0ExEz+aeI7raPvXnYXgwD2AZw5ido3tlQ7s8TxuLv0o=</dsig:DigestValue>
+      <dsig:DigestValue>5D0oIbRxBhjmaOzka1lh2cF8YcYkI1CIM+Sr+MsREJc=</dsig:DigestValue>
     </hash>
   </file>
   <file name="PlayCtrl.dll" size="4869632">

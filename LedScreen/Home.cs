@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Net;
@@ -26,7 +27,9 @@ namespace LedScreen
         private WorkerService workerService;
         private Color RowBackColorAlt = Color.FromArgb(32, 32, 48);//交替色 
         private Color RowBackColorSel = Color.FromArgb(32, 32, 48);//选择项目颜色 
+        private Color BorderColor = Color.FromArgb(178, 178, 185);
         private ArrayList serialPortsList;
+        private int Step = 0;
 
         /*****视频监控部分******/
         private bool m_bInitSDK = false;
@@ -132,6 +135,7 @@ namespace LedScreen
         public Home()
         {
             InitializeComponent();
+
             workerService = new WorkerService();
             //lstBoxWorker.DrawMode = DrawMode.OwnerDrawVariable;
             //lstBoxWorker.ItemHeight = 100;
@@ -141,20 +145,11 @@ namespace LedScreen
             this.labproname.Text = CommonUtil.GetConfigValue("proname");//用于定制显示项目名;
             this.slogen.Text = CommonUtil.GetConfigValue("slogen");
             this.foundation.Text = CommonUtil.GetConfigValue("foundation");
-            if (CommonUtil.GetConfigValue("mode") == "local")
-            {
-                timer3.Interval = 1000;
-                UpdateWorkerJobCount();
-            }
-            else
-            {
-                Console.WriteLine("非本地");
-                UpdateWorkerJobCountOnlineAsync();
-            }
+
 
             //this.FormBorderStyle = FormBorderStyle.None;     //设置窗体为无边框样式
             this.WindowState = FormWindowState.Maximized;    //最大化窗体 
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = AutoScaleMode.Font;
             tlp.GetType().GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(tlp, true, null);
 
             GetcountFromURL(pname);
@@ -162,6 +157,19 @@ namespace LedScreen
 
             GetAllInitInfo(this.Controls[0]);
             this.GetWeatherAsync();
+            this.logo();
+
+            this.labelTime.Text = DateTime.Now.ToString("yyyy年 MM月dd日 dddd");
+            this.timenow.Text = DateTime.Now.ToString("T");
+
+        }
+
+        private void logo()
+        {
+            Bitmap b = new Bitmap(new MemoryStream(Convert.FromBase64String(CommonUtil.GetConfigValue("logo"))));
+            Bitmap cr = new Bitmap(new MemoryStream(Convert.FromBase64String(CommonUtil.GetConfigValue("bgpic"))));
+            this.logopic.BackgroundImage = b;
+            this.panel4.BackgroundImage = cr;
         }
 
         /// <summary>
@@ -169,102 +177,108 @@ namespace LedScreen
         /// </summary>
         private void UpdateWorkerJobCount()
         {
-            string sql = "select distinct job from worker";
+            string sql = "select distinct job from worker where groupname='" + ConfigurationManager.AppSettings["prorealname"].ToString() + "';";
             DataTable dt = SQLiteDBHelper.ExecuteDataTable(sql);
             if (dt.Rows.Count <= 0)
                 return;
-            tlp.Controls.Clear();
-            int i = 0;
-            for (; i < dt.Rows.Count; i++)
+            
+            if (this.Step < Math.Ceiling((double)dt.Rows.Count / 10))
             {
-                
-                if (i > 9)
+                tlp.Controls.Clear();
+                int s = this.Step * 10;
+                for (int i = s; i < 10 * (this.Step + 1); i++)
                 {
-                    Console.WriteLine(String.Format("Math.Ceiling((double)dt.Rows.Count / 10) = {0}", Math.Ceiling((double)dt.Rows.Count / 10)));
-                    /*
-                    for (int j = 0; j < Math.Ceiling((double)dt.Rows.Count / 10); j++)
+                    if (i < dt.Rows.Count)
                     {
-                        Console.WriteLine("本地第" + j + "次休眠");
-                        System.Threading.Thread.Sleep(10000);
-                        for (; i < dt.Rows.Count; i++)
-                        {
-                            jobLableGroup(dt, i);
-                        }
+                        
+                        jobLableGroup(dt, i);
                     }
-                    */
+                        
                 }
-                else
-                    jobLableGroup(dt, i);
+                this.Step++;
+            }
+            else
+            {
+                this.Step = 0;
             }
 
         }
-        private void jobLableGroup(DataTable dt,int i)
+        private void jobLableGroup(DataTable dt, int i)
         {
-            Label lab = new Label();
-            string countsql = string.Format("select count(id) as count from worker where groupname = '{0}' and job = '{1}' and DATE(checkinTime) = '{2}';",
-                pname,
-                dt.Rows[i]["job"].ToString(),
-                DateTime.Now.ToString("yyyy-MM-dd")
-                );
-            DataTable dtt = SQLiteDBHelper.ExecuteDataTable(countsql);
-            string output = "";
-            if (dtt.Rows.Count > 0)
-                output = "\n考勤人数：" + dtt.Rows[0]["count"].ToString();
-            lab.Text = dt.Rows[i]["job"].ToString() + output;
-            lab.AutoSize = true;
-            FontFamily ff = new FontFamily("微软雅黑");
-            lab.Font = new Font(ff, 16, FontStyle.Regular, GraphicsUnit.World);
-            //通过Anchor 设置Label 列居中
-            lab.Anchor = (AnchorStyles.Left | AnchorStyles.Right);
-            tlp.Controls.Add(lab);
+            try
+            {
+                Label lab = new Label();
+                string countsql = string.Format("select count(id) as count from worker where groupname = '{0}' and job = '{1}' and DATE(checkinTime) = '{2}';",
+                    pname,
+                    dt.Rows[i]["job"].ToString(),
+                    DateTime.Now.ToString("yyyy-MM-dd")
+                    );
+                DataTable dtt = SQLiteDBHelper.ExecuteDataTable(countsql);
+                string output = "";
+                if (dtt.Rows.Count > 0)
+                    output = "\n考勤人数：" + dtt.Rows[0]["count"].ToString();
+                lab.Text = dt.Rows[i]["job"].ToString() + output;
+                lab.AutoSize = true;
+                FontFamily ff = new FontFamily("微软雅黑");
+                //lab.Font = new Font(ff, 16, FontStyle.Regular, GraphicsUnit.World);
+                //通过Anchor 设置Label 列居中
+                lab.Anchor = (AnchorStyles.Left | AnchorStyles.Right);
+                tlp.Controls.Add(lab);
+            }
+            catch (Exception ex) { Console.WriteLine(string.Format("考勤人数查询出错：{0}", ex.Message)); }
         }
         /// <summary>
         /// 线上查询各工种考勤统计信息
         /// </summary>
         private async void UpdateWorkerJobCountOnlineAsync()
         {
-            tlp.Controls.Clear();
+            
             string postURL = ConfigurationManager.AppSettings["getRecordInfoByWork"].ToString();
             string data = JObject.FromObject(new
             {
                 projectName = ConfigurationManager.AppSettings["prorealname"].ToString()
             }).ToString();
-
-            string task = await CommonUtil.GetResponseAsync(postURL, data);
-            JObject jj = JObject.Parse(task);
-            IList<JToken> results = jj["record"].Children().ToList();
-            IList<Record> searchResults = new List<Record>();
-            foreach (JToken result in results)
+            try
             {
-                Record searchResult = result.ToObject<Record>();
-                searchResults.Add(searchResult);
-            }
-            int i = 0;
-            for (; i < searchResults.Count; i++)
-            {
-                
-                if (i > 9)
+                string task = await CommonUtil.GetResponseAsync(postURL, data);
+                JObject jj = JObject.Parse(task);
+                IList<JToken> results = jj["record"].Children().ToList();
+                IList<Record> searchResults = new List<Record>();
+                foreach (JToken result in results)
                 {
-                    /*
-                    for (int j = 0; j < Math.Ceiling((double)searchResults.Count / 10); j++)
+                    Record searchResult = result.ToObject<Record>();
+                    searchResults.Add(searchResult);
+                }
+
+                if (this.Step < Math.Ceiling((double)searchResults.Count / 10))
+                {
+                    tlp.Controls.Clear();
+                    int s = this.Step * 10;
+                    for (int i = s; i < 10 * (this.Step + 1); i++)
                     {
-                        Console.WriteLine("第" + j + "次休眠");
-                        System.Threading.Thread.Sleep(10000);
-                        for (; i < searchResults.Count; i++)
+                        
+                        if (i < searchResults.Count)
                         {
+                            
                             setJobCountGroup(searchResults[i]);
                         }
                     }
-                    */
+                    this.Step++;
                 }
                 else
-                    setJobCountGroup(searchResults[i]);
+                {
+                    this.Step = 0;
+                }
+
             }
-
-
+            catch (Exception ex)
+            {
+                Console.WriteLine("***" + ex.Message);
+            }
         }
         private void setJobCountGroup(Record r)
         {
+
             Label lab = new Label();
             string output = "";
 
@@ -272,10 +286,11 @@ namespace LedScreen
             lab.Text = r.workKindName + output;
             lab.AutoSize = true;
             FontFamily ff = new FontFamily("微软雅黑");
-            lab.Font = new Font(ff, 16, FontStyle.Regular, GraphicsUnit.World);
+            //lab.Font = new Font(ff, 16, FontStyle.Regular, GraphicsUnit.World);
             //通过Anchor 设置Label 列居中
-            lab.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            lab.Anchor = (AnchorStyles.Left | AnchorStyles.Right);
             tlp.Controls.Add(lab);
+
         }
         /// <summary>
         /// 在线获取项目考勤人数
@@ -339,44 +354,51 @@ namespace LedScreen
                     projectName = pname
                 }
             }).ToString();
-
-            string task = await CommonUtil.GetResponseAsync(postURL, data);
-            JObject jj = JObject.Parse(task);
-
-            IList<JToken> results = jj["items"].Children().ToList();
-            IList<UserInfo> searchResults = new List<UserInfo>();
-            foreach (JToken result in results)
+            try
             {
-                UserInfo searchResult = result.ToObject<UserInfo>();
-                searchResults.Add(searchResult);
-            }
-            foreach (UserInfo u in searchResults)
-            {
-                CommonUtil.DebugConsole("用户为：" + u.userName);
-                DataTable dt = SQLiteDBHelper.ExecuteDataTable("select * from worker where identityId = '" + u.userId + "' and groupname = '" + pname + "';");
-                DataRow row = null;
-                if (dt.Rows.Count > 0)
-                    row = dt.Rows[0];
-                if (null == row)
+                string task = await CommonUtil.GetResponseAsync(postURL, data);
+
+                JObject jj = JObject.Parse(task);
+
+                IList<JToken> results = jj["items"].Children().ToList();
+                IList<UserInfo> searchResults = new List<UserInfo>();
+                foreach (JToken result in results)
                 {
-                    string insertsql = string.Format("insert into worker(identityId,username,contact,job,groupname,addtime,checkinState,checkinTime,identityPhoto)values('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}');",
-                        u.userId,
-                        u.userName,
-                        u.mobile,
-                        u.workKindName,
-                        u.projectName,
-                        u.createTime,
-                        0,
-                        DateTime.Now.ToString("yyyy-MM-dd"),
-                        u.photo
-                        );
-                    if (SQLiteDBHelper.ExecuteNonQuery(insertsql) > 0)
+                    UserInfo searchResult = result.ToObject<UserInfo>();
+                    searchResults.Add(searchResult);
+                }
+                foreach (UserInfo u in searchResults)
+                {
+                    CommonUtil.DebugConsole("用户为：" + u.userName);
+                    DataTable dt = SQLiteDBHelper.ExecuteDataTable(string.Format("select * from worker where identityId = '{0}' and groupname = '{1}';", u.userId, pname));
+                    DataRow row = null;
+                    if (dt.Rows.Count > 0)
+                        row = dt.Rows[0];
+                    if (null == row)
                     {
-                        CommonUtil.DebugConsole("新增用户成功");
+                        string insertsql = string.Format("insert into worker(identityId,username,contact,job,groupname,addtime,checkinState,checkinTime,identityPhoto)values('{0}','{1}','{2}','{3}','{4}','{5}',{6},'{7}','{8}');",
+                            u.userId,
+                            u.userName,
+                            u.mobile,
+                            u.workKindName,
+                            u.projectName,
+                            u.createTime,
+                            0,
+                            "1990-12-12",
+                            u.photo
+                            );
+                        if (SQLiteDBHelper.ExecuteNonQuery(insertsql) > 0)
+                        {
+                            CommonUtil.DebugConsole("新增用户成功");
+                        }
                     }
                 }
+                CommonUtil.DebugConsole("用户总数为：" + searchResults.Count);
             }
-            CommonUtil.DebugConsole("用户总数为：" + searchResults.Count);
+            catch (Exception ex)
+            {
+                Console.WriteLine("***" + ex.Message);
+            }
 
         }
 
@@ -857,12 +879,12 @@ namespace LedScreen
         /// <param name="e"></param>
         private void timer3_Tick(object sender, EventArgs e)
         {
-            /*
+
             if (CommonUtil.GetConfigValue("mode") == "local")
                 UpdateWorkerJobCount();
             else
                 UpdateWorkerJobCountOnlineAsync();
-                */
+
         }
         /// <summary>
         /// 定时更新考勤人数
@@ -884,7 +906,11 @@ namespace LedScreen
                 ControlsChange(this.Controls[0]);
             }
         }
-
+        /// <summary>
+        /// 单击标题获取项目下所有人员信息至数据库
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void labproname_Click(object sender, EventArgs e)
         {
             GetAllUsers(ConfigurationManager.AppSettings["prorealname"].ToString());
@@ -1102,11 +1128,6 @@ namespace LedScreen
                 workerService.Ledcontrol(workerService.GetLEDInfo(), "", 3);
         }
 
-        private void timer8_Tick(object sender, EventArgs e)
-        {
-            this.timenow.Text = DateTime.Now.ToString("T");
-        }
-
         private void GetWeatherAsync()
         {
             string strURL = "https://restapi.amap.com/v3/weather/weatherInfo?key=0a73c5c6be50f0a6dcebcaf3f7eaa2e0&extensions=all&city=" + CommonUtil.GetConfigValue("city");
@@ -1154,6 +1175,131 @@ namespace LedScreen
                 Console.WriteLine("天气更新");
                 this.GetWeatherAsync();
             }
+        }
+        //DrawBorder(Graphics graphics, Rectangle bounds, Color color, ButtonBorderStyle style);
+        private void tlp_Paint(object sender, PaintEventArgs e)
+        {
+            ControlPaint.DrawBorder(
+                 e.Graphics,
+                 tlp.ClientRectangle,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid
+                 );
+        }
+
+        private void panel9_Paint(object sender, PaintEventArgs e)
+        {
+            ControlPaint.DrawBorder(
+                 e.Graphics,
+                 panel9.ClientRectangle,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid
+                 );
+        }
+
+        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
+        {
+            ControlPaint.DrawBorder(
+                 e.Graphics,
+                 tableLayoutPanel1.ClientRectangle,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid
+                 );
+        }
+
+        private void panel6_Paint(object sender, PaintEventArgs e)
+        {
+            ControlPaint.DrawBorder(
+               e.Graphics,
+                panel8.ClientRectangle,
+                Color.Gray,
+                0,
+                ButtonBorderStyle.Solid,
+                Color.Gray,
+                0,
+                ButtonBorderStyle.Solid,
+                Color.Gray,
+                1,
+                ButtonBorderStyle.Solid,
+                Color.Gray,
+                0,
+                ButtonBorderStyle.Solid
+                );
+        }
+
+        private void panel8_Paint(object sender, PaintEventArgs e)
+        {
+            ControlPaint.DrawBorder(
+                e.Graphics,
+                panel8.ClientRectangle,
+                Color.Gray,
+                0,
+                ButtonBorderStyle.Solid,
+                Color.Gray,
+                0,
+                ButtonBorderStyle.Solid,
+                Color.Gray,
+                1,
+                ButtonBorderStyle.Solid,
+                Color.Gray,
+                0,
+                ButtonBorderStyle.Solid
+                );
+        }
+
+        private void panel4_Paint(object sender, PaintEventArgs e)
+        {
+            ControlPaint.DrawBorder(
+                 e.Graphics,
+                 panel4.ClientRectangle,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid,
+                 BorderColor,
+                 3,
+                 ButtonBorderStyle.Solid
+                 );
+        }
+
+        private void timer8_Tick(object sender, EventArgs e)
+        {
+            this.timenow.Text = DateTime.Now.ToString("T");
         }
     }
 

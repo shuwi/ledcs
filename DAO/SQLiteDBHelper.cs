@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Data.Common;
 using System.Data.SQLite;
 
@@ -46,24 +47,32 @@ namespace DAO
         public static int ExecuteNonQuery(string sql, SQLiteParameter[] parameters = null)
         {
             int affectedRows = 0;
-            using (SQLiteConnection connection = new SQLiteConnection(connStr))
+            try
             {
-                connection.Open();
-                using (DbTransaction transaction = connection.BeginTransaction())
+                using (SQLiteConnection connection = new SQLiteConnection(connStr))
                 {
-                    using (SQLiteCommand command = new SQLiteCommand(connection))
+                    connection.Open();
+                    using (DbTransaction transaction = connection.BeginTransaction())
                     {
-                        command.CommandText = sql;
-                        if (parameters != null)
+                        using (SQLiteCommand command = new SQLiteCommand(connection))
                         {
-                            command.Parameters.AddRange(parameters);
+                            command.CommandText = sql;
+                            if (parameters != null)
+                            {
+                                command.Parameters.AddRange(parameters);
+                            }
+                            affectedRows = command.ExecuteNonQuery();
                         }
-                        affectedRows = command.ExecuteNonQuery();
+                        transaction.Commit();
                     }
-                    transaction.Commit();
                 }
+                return affectedRows;
             }
-            return affectedRows;
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return 0;
+            }
         }
         /// <summary> 
         /// 执行一个查询语句，返回一个包含查询结果的DataTable 
@@ -73,19 +82,27 @@ namespace DAO
         /// <returns></returns> 
         public static DataTable ExecuteDataTable(string sql, SQLiteParameter[] parameters = null)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(connStr))
+            try
             {
-                using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                using (SQLiteConnection connection = new SQLiteConnection(connStr))
                 {
-                    if (parameters != null)
+                    using (SQLiteCommand command = new SQLiteCommand(sql, connection))
                     {
-                        command.Parameters.AddRange(parameters);
+                        if (parameters != null)
+                        {
+                            command.Parameters.AddRange(parameters);
+                        }
+                        SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
+                        DataTable data = new DataTable();
+                        adapter.Fill(data);
+                        return data;
                     }
-                    SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
-                    DataTable data = new DataTable();
-                    adapter.Fill(data);
-                    return data;
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new DataTable();
             }
         }
         /// <summary> 
