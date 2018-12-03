@@ -204,10 +204,10 @@ namespace LedScreen
             this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox1.Enabled = false;
-            this.pictureBox1.Location = new System.Drawing.Point(1415, 16);
+            this.pictureBox1.Location = new System.Drawing.Point(1411, 6);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 20);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(69, 33);
+            this.pictureBox1.Size = new System.Drawing.Size(71, 20);
             this.pictureBox1.TabIndex = 9;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Visible = false;
@@ -314,7 +314,6 @@ namespace LedScreen
             // 
             // timer3
             // 
-            this.timer3.Enabled = true;
             this.timer3.Interval = 10000;
             this.timer3.Tick += new System.EventHandler(this.timer3_Tick);
             // 
@@ -738,6 +737,7 @@ namespace LedScreen
             this.panel5.Controls.Add(this.slogen);
             this.panel5.Controls.Add(this.btnSetting);
             this.panel5.Controls.Add(this.btnSwitchPort);
+            this.panel5.Controls.Add(this.pictureBox1);
             this.panel5.Controls.Add(this.button1);
             this.panel5.Location = new System.Drawing.Point(3, 78);
             this.panel5.Name = "panel5";
@@ -786,7 +786,6 @@ namespace LedScreen
             this.panel2.Controls.Add(this.logopic);
             this.panel2.Controls.Add(this.foundation);
             this.panel2.Controls.Add(this.labproname);
-            this.panel2.Controls.Add(this.pictureBox1);
             this.panel2.Location = new System.Drawing.Point(0, 3);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(1493, 69);

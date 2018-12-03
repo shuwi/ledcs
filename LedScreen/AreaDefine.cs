@@ -62,11 +62,13 @@ namespace LedScreen
                 MessageBox.Show("区域类型必选！");
                 return;
             }
+            /*
             if (moduleType.Text==""||moduleType.Text=="请选择")
             {
                 MessageBox.Show("输出模板类型必选！");
                 return;
             }
+            */
             if (multiNAlignment.SelectedIndex < 0)
             {
                 if (areaType.SelectedIndex==1) {

@@ -166,10 +166,12 @@ namespace LedScreen
 
         private void logo()
         {
-            Bitmap b = new Bitmap(new MemoryStream(Convert.FromBase64String(CommonUtil.GetConfigValue("logo"))));
-            Bitmap cr = new Bitmap(new MemoryStream(Convert.FromBase64String(CommonUtil.GetConfigValue("bgpic"))));
-            this.logopic.BackgroundImage = b;
-            this.panel4.BackgroundImage = cr;
+            try
+            {
+                this.logopic.BackgroundImage = Image.FromFile(Application.StartupPath + @"\Resources\logo.png");
+                this.panel4.BackgroundImage = Image.FromFile(Application.StartupPath + @"\Resources\bg.png");
+            }
+            catch (Exception ex) { this.logopic.Visible = false; this.logopic.Dispose(); Console.WriteLine(ex.Message); }
         }
 
         /// <summary>
@@ -181,7 +183,7 @@ namespace LedScreen
             DataTable dt = SQLiteDBHelper.ExecuteDataTable(sql);
             if (dt.Rows.Count <= 0)
                 return;
-            
+
             if (this.Step < Math.Ceiling((double)dt.Rows.Count / 10))
             {
                 tlp.Controls.Clear();
@@ -190,10 +192,10 @@ namespace LedScreen
                 {
                     if (i < dt.Rows.Count)
                     {
-                        
+
                         jobLableGroup(dt, i);
                     }
-                        
+
                 }
                 this.Step++;
             }
@@ -232,7 +234,7 @@ namespace LedScreen
         /// </summary>
         private async void UpdateWorkerJobCountOnlineAsync()
         {
-            
+
             string postURL = ConfigurationManager.AppSettings["getRecordInfoByWork"].ToString();
             string data = JObject.FromObject(new
             {
@@ -256,10 +258,10 @@ namespace LedScreen
                     int s = this.Step * 10;
                     for (int i = s; i < 10 * (this.Step + 1); i++)
                     {
-                        
+
                         if (i < searchResults.Count)
                         {
-                            
+
                             setJobCountGroup(searchResults[i]);
                         }
                     }
@@ -475,7 +477,7 @@ namespace LedScreen
                 {
                     DataRow row = table.Rows[i];
                     SerialPort port = new SerialPort();
-                    SerialDataReceiveHandler handler = new SerialDataReceiveHandler(port, this, Convert.ToInt32(row["tag"].ToString()), this.lstBoxWorker, images, this.inuser,
+                    SerialDataReceiveHandler handler = new SerialDataReceiveHandler(port, this, Convert.ToInt32(row["tag"].ToString()), this.lstBoxWorker, this.images, this.inuser,
                     this.outuser,
                     this.nowinname,
                     this.nowoutname,
@@ -509,6 +511,7 @@ namespace LedScreen
                         return;
                     }
                 }
+                this.timer3.Enabled = true;
                 MessageBox.Show("端口打开成功");
                 btnSwitchPort.Text = "关闭串口";
             }
@@ -637,13 +640,17 @@ namespace LedScreen
         //工人考勤轮播绘图事件
         private void lstBoxWorker_DrawItem(object sender, DrawItemEventArgs e)
         {
+
             Brush myBrush = new SolidBrush(Color.FromArgb(32, 32, 48));
             e.Graphics.FillRectangle(myBrush, e.Bounds);
             e.DrawFocusRectangle();//焦点框 
 
-            if (images == null || images.Count == 0)
+            if (lstBoxWorker.Items.Count == 0)
                 return;
-            Image image = images[e.Index];
+            Console.WriteLine(string.Format("index = {0}", e.Index));
+            LoopUser u = new LoopUser();
+            u = (LoopUser)lstBoxWorker.Items[e.Index];
+            Image image = new Bitmap(new MemoryStream(Convert.FromBase64String(u.photo)));
             Graphics g = e.Graphics;
             Rectangle bounds = e.Bounds;
             Rectangle imageRect = new Rectangle(
@@ -673,8 +680,9 @@ namespace LedScreen
             StringFormat strFormat = new StringFormat();
 
             strFormat.LineAlignment = StringAlignment.Center;
-            e.Graphics.DrawString(lstBoxWorker.Items[e.Index].ToString(), e.Font, new SolidBrush(e.ForeColor), textRect, strFormat);
+            e.Graphics.DrawString(u.info, e.Font, new SolidBrush(e.ForeColor), textRect, strFormat);
             this.lstBoxWorker.ScrollAlwaysVisible = false;
+
 
         }
 
@@ -929,6 +937,7 @@ namespace LedScreen
                         return;
                     }
                 }
+
             }
             catch
             {

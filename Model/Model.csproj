@@ -60,6 +60,7 @@
   <ItemGroup>
     <Compile Include="LedDll.cs" />
     <Compile Include="LedInfo.cs" />
+    <Compile Include="LoopUser.cs" />
     <Compile Include="Module.cs" />
     <Compile Include="ModuleInfo.cs" />
     <Compile Include="Record.cs" />

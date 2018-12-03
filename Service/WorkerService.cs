@@ -259,12 +259,27 @@ namespace Service
 #warning 区域号问题
                     if (la.Area_type == 3)
                     {
-                        int aid = la.Id;
-                        LedDll.TIMEAREAINFO DigitalClockAreaInfo = new LedDll.TIMEAREAINFO();
-                        DigitalClockAreaInfo.ShowFormat = 0;
-                        DigitalClockAreaInfo.IsShowHour = 1;
-                        DigitalClockAreaInfo.IsShowMinute = 1;
-                        nResult = LedDll.LV_AddTimeArea(hProgram, 1, 1, ref AreaRect, ref DigitalClockAreaInfo);//注意区域号不能一样，详见函数声明注示
+                        LedDll.DIGITALCLOCKAREAINFO DigitalClockAreaInfo = new LedDll.DIGITALCLOCKAREAINFO();
+                        int dateformat = Convert.ToInt32(ConfigurationManager.AppSettings["DateFormat"].ToString());
+                        int timeformat = Convert.ToInt32(ConfigurationManager.AppSettings["TimeFormat"].ToString());
+                        if (dateformat > 0 && dateformat < 8)
+                        {
+                            DigitalClockAreaInfo.DateFormat = dateformat;
+                            DigitalClockAreaInfo.IsMutleLineShow = 1;
+                            DigitalClockAreaInfo.IsShowYear = 1;
+                            DigitalClockAreaInfo.IsShowMonth = 1;
+                            DigitalClockAreaInfo.IsShowDay = 1;
+                        }
+                        if (timeformat > 0 && timeformat < 7)
+                        {
+                            DigitalClockAreaInfo.TimeFormat = timeformat;
+                            DigitalClockAreaInfo.IsShowHour = 1;
+                            DigitalClockAreaInfo.IsShowMinute = 1;
+                            DigitalClockAreaInfo.IsShowSecond = 1;
+                            DigitalClockAreaInfo.IsMutleLineShow = 1;
+                        }
+                        LedDll.LV_AdjustTime(ref CommunicationInfo);
+                        nResult = LedDll.LV_AddDigitalClockArea(hProgram, 1, 6, ref AreaRect, ref DigitalClockAreaInfo);//注意区域号不能一样，详见函数声明注示
                         if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
                         {
                             LEDErrorControl(nResult);
@@ -289,7 +304,8 @@ namespace Service
                         DigitalClockAreaInfo.MinutePointerWidth = 2;
                         DigitalClockAreaInfo.HourPointerWidth = 3;
                         DigitalClockAreaInfo.SecondPointerWidth = 1;
-                        nResult = LedDll.LV_AddClockArea(hProgram,1,3,ref AreaRect, ref DigitalClockAreaInfo);//注意区域号不能一样，详见函数声明注示
+                        LedDll.LV_AdjustTime(ref CommunicationInfo);
+                        nResult = LedDll.LV_AddClockArea(hProgram,1,6,ref AreaRect, ref DigitalClockAreaInfo);//注意区域号不能一样，详见函数声明注示
                         if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
                         {
                             LEDErrorControl(nResult);
@@ -409,12 +425,27 @@ namespace Service
                     #warning 区域号问题
                     if (la.Area_type == 3)
                     {
-                        int aid = la.Id;
-                        LedDll.TIMEAREAINFO DigitalClockAreaInfo = new LedDll.TIMEAREAINFO();
-                        DigitalClockAreaInfo.ShowFormat = 0;
-                        DigitalClockAreaInfo.IsShowHour = 1;
-                        DigitalClockAreaInfo.IsShowMinute = 1;
-                        nResult = LedDll.LV_AddTimeArea(hProgram, 1, 1, ref AreaRect, ref DigitalClockAreaInfo);//注意区域号不能一样，详见函数声明注示
+                        LedDll.DIGITALCLOCKAREAINFO DigitalClockAreaInfo = new LedDll.DIGITALCLOCKAREAINFO();
+                        int dateformat = Convert.ToInt32(ConfigurationManager.AppSettings["DateFormat"].ToString());
+                        int timeformat = Convert.ToInt32(ConfigurationManager.AppSettings["TimeFormat"].ToString());
+                        if (dateformat > 0 && dateformat < 8)
+                        {
+                            DigitalClockAreaInfo.DateFormat = dateformat;
+                            DigitalClockAreaInfo.IsMutleLineShow = 1;
+                            DigitalClockAreaInfo.IsShowYear = 1;
+                            DigitalClockAreaInfo.IsShowMonth = 1;
+                            DigitalClockAreaInfo.IsShowDay = 1;
+                        }
+                        if (timeformat > 0 && timeformat < 7)
+                        {
+                            DigitalClockAreaInfo.TimeFormat = timeformat;
+                            DigitalClockAreaInfo.IsShowHour = 1;
+                            DigitalClockAreaInfo.IsShowMinute = 1;
+                            DigitalClockAreaInfo.IsShowSecond = 1;
+                            DigitalClockAreaInfo.IsMutleLineShow = 1;
+                        }
+                        //LedDll.LV_AdjustTime(ref CommunicationInfo);
+                        nResult = LedDll.LV_AddDigitalClockArea(hProgram, 1, 6, ref AreaRect, ref DigitalClockAreaInfo);
                         if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
                         {
                             LEDErrorControl(nResult);
@@ -439,6 +470,7 @@ namespace Service
                         DigitalClockAreaInfo.MinutePointerWidth = 2;
                         DigitalClockAreaInfo.HourPointerWidth = 3;
                         DigitalClockAreaInfo.SecondPointerWidth = 1;
+                        LedDll.LV_AdjustTime(ref CommunicationInfo);
                         nResult = LedDll.LV_AddClockArea(hProgram, 1, 3, ref AreaRect, ref DigitalClockAreaInfo);//注意区域号不能一样，详见函数声明注示
                         if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
                         {
