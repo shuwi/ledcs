@@ -93,6 +93,7 @@ namespace LedScreen
             this.timer7 = new System.Windows.Forms.Timer(this.components);
             this.timer9 = new System.Windows.Forms.Timer(this.components);
             this.timer8 = new System.Windows.Forms.Timer(this.components);
+            this.autoUpdateOnlineData = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel4.SuspendLayout();
@@ -215,13 +216,13 @@ namespace LedScreen
             // labproname
             // 
             this.labproname.AutoSize = true;
-            this.labproname.Font = new System.Drawing.Font("微软雅黑", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.labproname.Font = new System.Drawing.Font("微软雅黑", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.labproname.ForeColor = System.Drawing.Color.Aqua;
             this.labproname.Location = new System.Drawing.Point(526, 6);
             this.labproname.Margin = new System.Windows.Forms.Padding(0);
             this.labproname.MaximumSize = new System.Drawing.Size(741, 0);
             this.labproname.Name = "labproname";
-            this.labproname.Size = new System.Drawing.Size(125, 46);
+            this.labproname.Size = new System.Drawing.Size(75, 28);
             this.labproname.TabIndex = 14;
             this.labproname.Text = "label5";
             this.labproname.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -262,7 +263,7 @@ namespace LedScreen
             // timer2
             // 
             this.timer2.Enabled = true;
-            this.timer2.Interval = 1000;
+            this.timer2.Interval = 10000;
             this.timer2.Tick += new System.EventHandler(this.timer2_Tick);
             // 
             // label5
@@ -335,7 +336,7 @@ namespace LedScreen
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1496, 788);
+            this.panel1.Size = new System.Drawing.Size(1496, 782);
             this.panel1.TabIndex = 17;
             // 
             // panel4
@@ -757,6 +758,7 @@ namespace LedScreen
             this.slogen.TabIndex = 0;
             this.slogen.Text = "label7";
             this.slogen.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.slogen.Click += new System.EventHandler(this.slogen_ClickAsync);
             // 
             // tableLayoutPanel1
             // 
@@ -826,7 +828,7 @@ namespace LedScreen
             // timer7
             // 
             this.timer7.Enabled = true;
-            this.timer7.Interval = 300000;
+            this.timer7.Interval = 120000;
             this.timer7.Tick += new System.EventHandler(this.timer7_Tick);
             // 
             // timer9
@@ -841,13 +843,20 @@ namespace LedScreen
             this.timer8.Interval = 1000;
             this.timer8.Tick += new System.EventHandler(this.timer8_Tick);
             // 
+            // autoUpdateOnlineData
+            // 
+            this.autoUpdateOnlineData.Enabled = true;
+            this.autoUpdateOnlineData.Interval = 50000;
+            this.autoUpdateOnlineData.Tick += new System.EventHandler(this.autoUpdateOnlineData_Tick);
+            // 
             // Home
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(29)))), ((int)(((byte)(36)))));
-            this.ClientSize = new System.Drawing.Size(1496, 788);
+            this.ClientSize = new System.Drawing.Size(1496, 782);
             this.Controls.Add(this.panel1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Home";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -947,6 +956,7 @@ namespace LedScreen
         public System.Windows.Forms.Timer timer7;
         public System.Windows.Forms.Timer timer9;
         public System.Windows.Forms.Timer timer8;
+        private System.Windows.Forms.Timer autoUpdateOnlineData;
     }
 }
 

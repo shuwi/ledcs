@@ -1,11 +1,13 @@
 ﻿using DAO;
 using Model;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NVRCsharpDemo;
 using Service;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Drawing;
@@ -13,8 +15,11 @@ using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace LedScreen
@@ -131,7 +136,152 @@ namespace LedScreen
             }
 
         }
+        /// <summary>
+        /// 后台更新线上数据
+        /// </summary>
+        private BackgroundWorker worker = new BackgroundWorker();
+        private void initWorker()
+        {
+            worker.WorkerReportsProgress = true;
+            worker.WorkerSupportsCancellation = true;
+            worker.DoWork += new DoWorkEventHandler(DoWork);
+            worker.ProgressChanged += new ProgressChangedEventHandler(ProgessChanged);
+            //worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(CompleteWork);
+        }
+        public void DoWork(object sender, DoWorkEventArgs e)
+        {
+            if (worker.CancellationPending)
+            {
+                e.Cancel = true;
+                return;
+            }
+            worker.ReportProgress(1);
+            try
+            {
+                GetJobCountLEDInfoAsync();//工种线上实时
+                GetGroupCountLEDInfo();//班组线上实时
+                UpdateWorkerNumberOnlineAsync();//项目线上考勤
+                GetProjectCountInfoAsync();//项目线上人数
+                GetAllUsers(ConfigurationManager.AppSettings["prorealname"].ToString());
+                worker.ReportProgress(100);
+            }
+            catch
+            {
+                e.Cancel = true;
+            }
+            
+        }
+        /// <summary>
+        /// 工种线上实时
+        /// </summary>
+        private void GetJobCountLEDInfoAsync()
+        {
+            string postURL = ConfigurationManager.AppSettings["getRecordInfoByWork"].ToString();
+            string data = JObject.FromObject(new
+            {
+                projectName = ConfigurationManager.AppSettings["prorealname"].ToString()
+            }).ToString();
+            Task<string> rr = CommonUtil.GetResponseAsync(postURL, data);
+            string task = rr.Result;
+            Console.WriteLine("GetJobCountLEDInfoAsync:" + task);
+            JObject jj = JObject.Parse(task);
+            IList<JToken> results = jj["record"].Children().ToList();
 
+            IList<Record> searchResults = new List<Record>();
+            foreach (JToken result in results)
+            {
+                Record searchResult = result.ToObject<Record>();
+                searchResults.Add(searchResult);
+            }
+            string outp = string.Empty;
+            foreach (Record r in searchResults)
+            {
+                string output = "";
+                output = "考勤人数：" + r.count.ToString();
+                outp += r.workKindName + output + ",";
+            }
+            if (!string.Empty.Equals(outp))
+                CommonUtil.updateAsyncData("GetJobCountLEDInfoAsync", outp);
+
+        }
+        /// <summary>
+        /// 班组线上实时
+        /// </summary>
+        private void GetGroupCountLEDInfo()
+        {
+            string postURL = ConfigurationManager.AppSettings["getRecordInfoByClassNo"].ToString();
+            string data = JObject.FromObject(new
+            {
+                projectName = ConfigurationManager.AppSettings["prorealname"].ToString()
+            }).ToString();
+
+            string task = CommonUtil.GetResponseAsync(postURL, data).Result;
+            JObject jj = JObject.Parse(task);
+            IList<JToken> results = jj["record"].Children().ToList();
+            List<string> rr = new List<string>();
+            foreach (JToken result in results)
+            {
+                ClassCount searchResult = result.ToObject<ClassCount>();
+                rr.Add(string.Format("班组：{0} 考勤人数：{1}", searchResult.classNo, searchResult.count));
+            }
+            if (rr.Count > 0)
+            {
+                Console.WriteLine(string.Join("，", rr));
+                CommonUtil.updateAsyncData("GetGroupCountLEDInfoAsync", string.Join("，", rr));
+            }
+        }
+        /// <summary>
+        /// 项目线上考勤
+        /// </summary>
+        private void UpdateWorkerNumberOnlineAsync()
+        {
+            string postURL = ConfigurationManager.AppSettings["getRecordInfoByProject"].ToString();
+            string data = JObject.FromObject(new
+            {
+                projectName = ConfigurationManager.AppSettings["prorealname"].ToString()
+            }).ToString();
+            
+            string task = CommonUtil.GetResponseAsync(postURL, data).Result;
+            JObject jj = JObject.Parse(task);
+            if (!string.Empty.Equals(jj["count"].ToObject<string>()))
+                CommonUtil.updateAsyncData("UpdateWorkerNumberOnlineAsync", "考勤人数：" + jj["count"].ToObject<string>());
+        }
+        /// <summary>
+        /// 项目线上人数
+        /// </summary>
+        private void GetProjectCountInfoAsync()
+        {
+            string postURL = ConfigurationManager.AppSettings["postCountURL"].ToString();
+            string data = JObject.FromObject(new
+            {
+                userInfo = new
+                {
+                    projectName = ConfigurationManager.AppSettings["prorealname"].ToString()
+                }
+            }).ToString();
+            
+            string task = CommonUtil.GetResponseAsync(postURL,data).Result;
+
+            JObject jj = JObject.Parse(task);
+            if(!string.Empty.Equals(jj["record"].ToString()))
+                CommonUtil.updateAsyncData("GetProjectCountInfoAsync", "项目人数：" + jj["record"].ToString());
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void ProgessChanged(object sender, ProgressChangedEventArgs e)
+        {
+            //Console.WriteLine(String.Format("ProgessChanged###{0}", e.ProgressPercentage));
+            if (e.ProgressPercentage == 100)
+                Console.WriteLine("后台任务运行成功！");
+            //MessageBox.Show("成功！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        public void CompleteWork(object sender, RunWorkerCompletedEventArgs e)
+        {
+            Console.WriteLine(String.Format("CompleteWork###{0}", e.Result));
+        }
         public Home()
         {
             InitializeComponent();
@@ -162,6 +312,8 @@ namespace LedScreen
             this.labelTime.Text = DateTime.Now.ToString("yyyy年 MM月dd日 dddd");
             this.timenow.Text = DateTime.Now.ToString("T");
 
+            SQLiteDBHelper.CreateTable(CommonUtil.asyncdatasql);
+            initWorker();
         }
 
         private void logo()
@@ -234,7 +386,6 @@ namespace LedScreen
         /// </summary>
         private async void UpdateWorkerJobCountOnlineAsync()
         {
-
             string postURL = ConfigurationManager.AppSettings["getRecordInfoByWork"].ToString();
             string data = JObject.FromObject(new
             {
@@ -278,6 +429,59 @@ namespace LedScreen
                 Console.WriteLine("***" + ex.Message);
             }
         }
+        /// <summary>
+        /// 线上班组考勤统计查询
+        /// </summary>
+        private async void UpdateWorkerClassCountOnlineAsync()
+        {
+            string postURL = ConfigurationManager.AppSettings["getRecordInfoByClassNo"].ToString();
+            string data = JObject.FromObject(new
+            {
+                projectName = ConfigurationManager.AppSettings["prorealname"].ToString()
+            }).ToString();
+            try
+            {
+                string task = await CommonUtil.GetResponseAsync(postURL, data);
+
+
+                //Console.WriteLine("线上班组考勤统计查询：" + task);
+                JObject jj = JObject.Parse(task);
+                IList<JToken> results = jj["record"].Children().ToList();
+                IList<ClassCount> searchResults = new List<ClassCount>();
+                foreach (JToken result in results)
+                {
+                    ClassCount searchResult = result.ToObject<ClassCount>();
+                    Console.WriteLine(searchResult.classNo);
+                    searchResults.Add(searchResult);
+                }
+
+                if (this.Step < Math.Ceiling((double)searchResults.Count / 10))
+                {
+                    tlp.Controls.Clear();
+                    int s = this.Step * 10;
+                    for (int i = s; i < 10 * (this.Step + 1); i++)
+                    {
+
+                        if (i < searchResults.Count)
+                        {
+                            Console.WriteLine("开始调用：" + i);
+                            setClassNoCountGroup(searchResults[i]);
+                        }
+                    }
+                    Step++;
+                    Console.WriteLine("Step = {0}", Step);
+                }
+                else
+                {
+                    Step = 0;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("***" + ex.Message);
+            }
+        }
         private void setJobCountGroup(Record r)
         {
 
@@ -294,6 +498,22 @@ namespace LedScreen
             tlp.Controls.Add(lab);
 
         }
+        private void setClassNoCountGroup(ClassCount r)
+        {
+
+            Label lab = new Label();
+            string output = "";
+
+            output = "\n考勤人数：" + r.count.ToString();
+            lab.Text = r.classNo + output;
+            lab.AutoSize = true;
+            FontFamily ff = new FontFamily("微软雅黑");
+            //lab.Font = new Font(ff, 16, FontStyle.Regular, GraphicsUnit.World);
+            //通过Anchor 设置Label 列居中
+            lab.Anchor = (AnchorStyles.Left | AnchorStyles.Right);
+            tlp.Controls.Add(lab);
+            Console.WriteLine("tlp.Controls 共有：{0}" + tlp.Controls.Count);
+        }
         /// <summary>
         /// 在线获取项目考勤人数
         /// </summary>
@@ -307,20 +527,16 @@ namespace LedScreen
                     projectName = pname
                 }
             }).ToString();
-            try
-            {
-                string task = await CommonUtil.GetResponseAsync(CommonUtil.GetConfigValue("postCountURL"), data);
-                JObject jj = JObject.Parse(task);
-                string v = jj["record"].ToObject<string>();
-                Console.WriteLine("%%%%%%");
-                Console.WriteLine(task);
-                this.label6.Text = v;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("***" + ex.Message);
-                this.label6.Text = "未知";
-            }
+            string task = await CommonUtil.GetResponseAsync(CommonUtil.GetConfigValue("postCountURL"), data);
+            if (null == task)
+                return;
+            JObject jj = JObject.Parse(task);
+            if (null == jj)
+                return;
+            string v = jj["record"].ToObject<string>();
+            
+            Console.WriteLine(task);
+            this.label6.Text = v;
             this.label6.Refresh();
         }
         public async void UpadteAllAtUsers(string pname)
@@ -332,13 +548,19 @@ namespace LedScreen
             try
             {
                 string task = await CommonUtil.GetResponseAsync(CommonUtil.GetConfigValue("getRecordInfoByProject"), data);
+                Console.WriteLine(task);
                 JObject jj = JObject.Parse(task);
+                if (null == jj)
+                    return;
+                if (null == jj["count"])
+                    return;
                 string v = jj["count"].ToObject<string>();
                 this.label2.Text = v;
             }
-            catch
+            catch(Exception ex)
             {
-                this.label2.Text = "未知";
+                Console.WriteLine(ex.StackTrace);
+                this.label2.Text = "0";
             }
             this.label2.Refresh();
         }
@@ -359,7 +581,9 @@ namespace LedScreen
             try
             {
                 string task = await CommonUtil.GetResponseAsync(postURL, data);
-
+                if (String.IsNullOrEmpty(task))
+                    return;
+                Console.WriteLine(JToken.Parse(task).ToString(Newtonsoft.Json.Formatting.Indented));
                 JObject jj = JObject.Parse(task);
 
                 IList<JToken> results = jj["items"].Children().ToList();
@@ -378,7 +602,7 @@ namespace LedScreen
                         row = dt.Rows[0];
                     if (null == row)
                     {
-                        string insertsql = string.Format("insert into worker(identityId,username,contact,job,groupname,addtime,checkinState,checkinTime,identityPhoto)values('{0}','{1}','{2}','{3}','{4}','{5}',{6},'{7}','{8}');",
+                        string insertsql = string.Format("insert into worker(identityId,username,contact,job,groupname,addtime,checkinState,checkinTime,identityPhoto,classNo)values('{0}','{1}','{2}','{3}','{4}','{5}',{6},'{7}','{8}','{9}')",
                             u.userId,
                             u.userName,
                             u.mobile,
@@ -387,7 +611,8 @@ namespace LedScreen
                             u.createTime,
                             0,
                             "1990-12-12",
-                            u.photo
+                            u.photo,
+                            u.classNo
                             );
                         if (SQLiteDBHelper.ExecuteNonQuery(insertsql) > 0)
                         {
@@ -496,6 +721,7 @@ namespace LedScreen
                     port.StopBits = StopBits.One;
                     port.DataReceived += new SerialDataReceivedEventHandler(handler.Sp_DataReceived);
                     port.ReceivedBytesThreshold = 1;
+                    //Console.WriteLine("波特率：{0}", port.BaudRate);
                     serialPortsList.Add(port);
                     try
                     {
@@ -647,7 +873,7 @@ namespace LedScreen
 
             if (lstBoxWorker.Items.Count == 0)
                 return;
-            Console.WriteLine(string.Format("index = {0}", e.Index));
+            //Console.WriteLine(string.Format("index = {0}", e.Index));
             LoopUser u = new LoopUser();
             u = (LoopUser)lstBoxWorker.Items[e.Index];
             Image image = new Bitmap(new MemoryStream(Convert.FromBase64String(u.photo)));
@@ -775,7 +1001,7 @@ namespace LedScreen
             else
             {
                 //MessageBox.Show("视频开启成功!", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                Console.WriteLine("视频开启成功!");
+                //Console.WriteLine("视频开启成功!");
                 m_struIpParaCfgV40 = (CHCNetSDK.NET_DVR_IPPARACFG_V40)Marshal.PtrToStructure(ptrIpParaCfgV40, typeof(CHCNetSDK.NET_DVR_IPPARACFG_V40));
 
                 for (i = 0; i < dwAChanTotalNum; i++)
@@ -887,10 +1113,11 @@ namespace LedScreen
         /// <param name="e"></param>
         private void timer3_Tick(object sender, EventArgs e)
         {
-
             if (CommonUtil.GetConfigValue("mode") == "local")
                 UpdateWorkerJobCount();
-            else
+            if (CommonUtil.GetConfigValue("mode") == "localc")
+                UpdateWorkerClassCountOnlineAsync();
+            if (CommonUtil.GetConfigValue("mode") == "localj")
                 UpdateWorkerJobCountOnlineAsync();
 
         }
@@ -921,7 +1148,7 @@ namespace LedScreen
         /// <param name="e"></param>
         private void labproname_Click(object sender, EventArgs e)
         {
-            GetAllUsers(ConfigurationManager.AppSettings["prorealname"].ToString());
+            //GetAllUsers(ConfigurationManager.AppSettings["prorealname"].ToString());
         }
 
         private void label5_Click(object sender, EventArgs e)
@@ -994,147 +1221,196 @@ namespace LedScreen
 
         private void labelTime_Click(object sender, EventArgs e)
         {
-            LedInfo li = workerService.GetLEDInfo();
-            if (null == li.LedIp)
-            {
-                MessageBox.Show("屏幕参数未设置", "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            int nResult;
-            LedDll.COMMUNICATIONINFO CommunicationInfo = new LedDll.COMMUNICATIONINFO();//定义一通讯参数结构体变量用于对设定的LED通讯，具体对此结构体元素赋值说明见COMMUNICATIONINFO结构体定义部份注示
-            //ZeroMemory(&CommunicationInfo,sizeof(COMMUNICATIONINFO));
-            //TCP通讯********************************************************************************
-            CommunicationInfo.SendType = 0;//设为固定IP通讯模式，即TCP通讯
-            CommunicationInfo.IpStr = li.LedIp;//给IpStr赋值LED控制卡的IP
-            CommunicationInfo.LedNumber = 1;//LED屏号为1，注意socket通讯和232通讯不识别屏号，默认赋1就行了，485必需根据屏的实际屏号进行赋值
+            //LedInfo li = workerService.GetLEDInfo();
+            //if (null == li.LedIp)
+            //{
+            //    MessageBox.Show("屏幕参数未设置", "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //    return;
+            //}
+            //int nResult;
+            //LedDll.COMMUNICATIONINFO CommunicationInfo = new LedDll.COMMUNICATIONINFO();//定义一通讯参数结构体变量用于对设定的LED通讯，具体对此结构体元素赋值说明见COMMUNICATIONINFO结构体定义部份注示
+            ////ZeroMemory(&CommunicationInfo,sizeof(COMMUNICATIONINFO));
+            ////TCP通讯********************************************************************************
+            //CommunicationInfo.SendType = 0;//设为固定IP通讯模式，即TCP通讯
+            //CommunicationInfo.IpStr = li.LedIp;//给IpStr赋值LED控制卡的IP
+            //CommunicationInfo.LedNumber = 1;//LED屏号为1，注意socket通讯和232通讯不识别屏号，默认赋1就行了，485必需根据屏的实际屏号进行赋值
 
-            nResult = LedDll.LV_SetBasicInfo(ref CommunicationInfo, 2, li.Width, li.Height);//设置屏参，屏的颜色为2即为双基色，64为屏宽点数，32为屏高点数，具体函数参数说明见函数声明注示
-            if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
-            {
-                string ErrStr;
-                ErrStr = LedDll.LS_GetError(nResult);
-                MessageBox.Show(ErrStr, "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            int hProgram;//节目句柄
-            nResult = LedDll.LV_TestOnline(ref CommunicationInfo);
-            if (nResult != 0)
-            {
-                MessageBox.Show(LedDll.LS_GetError(nResult), "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            nResult = LedDll.LV_AdjustTime(ref CommunicationInfo);
-            if (nResult != 0)
-                MessageBox.Show(LedDll.LS_GetError(nResult), "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);//只报错，不退出
-            hProgram = LedDll.LV_CreateProgram(li.Width, li.Height, 2);//根据传的参数创建节目句柄，64是屏宽点数，32是屏高点数，2是屏的颜色，注意此处屏宽高及颜色参数必需与设置屏参的屏宽高及颜色一致，否则发送时会提示错误
-            if (hProgram == 0)
-            {
-                MessageBox.Show("创建节目对象失败", "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            nResult = LedDll.LV_AddProgram(hProgram, 1, 0, 0);//添加一个节目，参数说明见函数声明注示
-            if (nResult != 0)
-            {
-                MessageBox.Show(LedDll.LS_GetError(nResult), "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            List<ModuleInfo> lla = workerService.GetLEDArea(li.Id);
-            foreach (ModuleInfo la in lla)
-            {
-                LedDll.AREARECT AreaRect = new LedDll.AREARECT();//区域坐标属性结构体变量
-                AreaRect.left = la.Left_begin;
-                AreaRect.top = la.Top_begin;
-                AreaRect.width = la.Width;
-                AreaRect.height = la.Height;
+            //nResult = LedDll.LV_SetBasicInfo(ref CommunicationInfo, 2, li.Width, li.Height);//设置屏参，屏的颜色为2即为双基色，64为屏宽点数，32为屏高点数，具体函数参数说明见函数声明注示
+            //if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
+            //{
+            //    string ErrStr;
+            //    ErrStr = LedDll.LS_GetError(nResult);
+            //    MessageBox.Show(ErrStr, "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //}
+            //int hProgram;//节目句柄
+            //nResult = LedDll.LV_TestOnline(ref CommunicationInfo);
+            //if (nResult != 0)
+            //{
+            //    MessageBox.Show(LedDll.LS_GetError(nResult), "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //    return;
+            //}
+            //nResult = LedDll.LV_AdjustTime(ref CommunicationInfo);
+            //if (nResult != 0)
+            //    MessageBox.Show(LedDll.LS_GetError(nResult), "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);//只报错，不退出
+            //hProgram = LedDll.LV_CreateProgram(li.Width, li.Height, 2);//根据传的参数创建节目句柄，64是屏宽点数，32是屏高点数，2是屏的颜色，注意此处屏宽高及颜色参数必需与设置屏参的屏宽高及颜色一致，否则发送时会提示错误
+            //if (hProgram == 0)
+            //{
+            //    MessageBox.Show("创建节目对象失败", "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //    return;
+            //}
+            //nResult = LedDll.LV_AddProgram(hProgram, 1, 0, 0);//添加一个节目，参数说明见函数声明注示
+            //if (nResult != 0)
+            //{
+            //    MessageBox.Show(LedDll.LS_GetError(nResult), "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //    return;
+            //}
+            //List<ModuleInfo> lla = workerService.GetLEDArea(li.Id);
+            //foreach (ModuleInfo la in lla)
+            //{
+            //    LedDll.AREARECT AreaRect = new LedDll.AREARECT();//区域坐标属性结构体变量
+            //    AreaRect.left = la.Left_begin;
+            //    AreaRect.top = la.Top_begin;
+            //    AreaRect.width = la.Width;
+            //    AreaRect.height = la.Height;
 
-                LedDll.LV_AddImageTextArea(hProgram, 1, la.Id, ref AreaRect, 1);
+            //    LedDll.LV_AddImageTextArea(hProgram, 1, la.Id, ref AreaRect, 1);
 
-                LedDll.FONTPROP FontProp = new LedDll.FONTPROP();//文字属性
-                FontProp.FontName = "宋体";
-                FontProp.FontSize = la.Font_size;
-                FontProp.FontColor = LedDll.COLOR_RED;
-                FontProp.FontBold = la.Font_bold;
+            //    LedDll.FONTPROP FontProp = new LedDll.FONTPROP();//文字属性
+            //    FontProp.FontName = "宋体";
+            //    FontProp.FontSize = la.Font_size;
+            //    FontProp.FontColor = LedDll.COLOR_RED;
+            //    FontProp.FontBold = la.Font_bold;
 
-                LedDll.PLAYPROP PlayProp = new LedDll.PLAYPROP();
-                PlayProp.InStyle = la.In_style;
-                PlayProp.DelayTime = la.Delay_time;
-                PlayProp.Speed = la.Speed;
-                //可以添加多个子项到图文区，如下添加可以选一个或多个添加（注意点：调用添加子项到图文区域这些方法前都必须要先调用LV_AddImageTextArea）
-                if (la.Area_type == 1 || la.Area_type == 5 || la.Area_type == 6)
-                {
-                    nResult = LedDll.LV_AddMultiLineTextToImageTextArea(hProgram, 1, la.Id, LedDll.ADDTYPE_STRING, "这是一个测试文本", ref FontProp, ref PlayProp, la.Multi_nAlignment, la.Multi_IsVCenter);
-                    if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
-                    {
-                        MessageBox.Show(LedDll.LS_GetError(nResult), "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                }
-                if (la.Area_type == 2)
-                {
-                    nResult = LedDll.LV_AddSingleLineTextToImageTextArea(hProgram, 1, la.Id, LedDll.ADDTYPE_STRING, "这是另一个测试文本", ref FontProp, ref PlayProp);
-                    if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
-                    {
-                        MessageBox.Show(LedDll.LS_GetError(nResult), "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                }
-                #region 数字时钟
-                if (la.Area_type == 3)
-                {
-                    int aid = la.Id;
-                    LedDll.TIMEAREAINFO DigitalClockAreaInfo = new LedDll.TIMEAREAINFO();
-                    DigitalClockAreaInfo.ShowFormat = 0;
-                    DigitalClockAreaInfo.IsShowHour = 1;
-                    DigitalClockAreaInfo.IsShowMinute = 1;
-                    nResult = LedDll.LV_AddTimeArea(hProgram, 1, la.Id, ref AreaRect, ref DigitalClockAreaInfo);//注意区域号不能一样，详见函数声明注示
-                    if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
-                    {
-                        MessageBox.Show(LedDll.LS_GetError(nResult), "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                }
-                if (la.Area_type == 4)
-                {
-                    int aid = la.Id;
-                    LedDll.CLOCKAREAINFO DigitalClockAreaInfo = new LedDll.CLOCKAREAINFO();
-                    DigitalClockAreaInfo.ClockType = 0;
-                    DigitalClockAreaInfo.DateFormat = 1;
-                    DigitalClockAreaInfo.HourMarkColor = 1;
-                    DigitalClockAreaInfo.HourMarkType = 0;
-                    DigitalClockAreaInfo.HourMarkWidth = 2;
-                    DigitalClockAreaInfo.MiniteMarkColor = LedDll.COLOR_RED;
-                    DigitalClockAreaInfo.MiniteMarkType = 0;
-                    DigitalClockAreaInfo.MiniteMarkWidth = 1;
-                    DigitalClockAreaInfo.HourMarkColor = LedDll.COLOR_RED;
-                    DigitalClockAreaInfo.MinutePointerColor = LedDll.COLOR_RED;
-                    DigitalClockAreaInfo.SecondPointerColor = LedDll.COLOR_RED;
-                    DigitalClockAreaInfo.MinutePointerWidth = 2;
-                    DigitalClockAreaInfo.HourPointerWidth = 3;
-                    DigitalClockAreaInfo.SecondPointerWidth = 1;
-                    nResult = LedDll.LV_AddClockArea(hProgram, 1, la.Id, ref AreaRect, ref DigitalClockAreaInfo);//注意区域号不能一样，详见函数声明注示
-                    if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
-                    {
-                        MessageBox.Show(LedDll.LS_GetError(nResult), "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                }
-                #endregion
-            }
-            nResult = LedDll.LV_Send(ref CommunicationInfo, hProgram);//发送，见函数声明注示
-            LedDll.LV_DeleteProgram(hProgram);//删除节目内存对象，详见函数声明注示
-            if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
-                MessageBox.Show(LedDll.LS_GetError(nResult), "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            else
-                MessageBox.Show("LED发送成功", "提醒", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //    LedDll.PLAYPROP PlayProp = new LedDll.PLAYPROP();
+            //    PlayProp.InStyle = la.In_style;
+            //    PlayProp.DelayTime = la.Delay_time;
+            //    PlayProp.Speed = la.Speed;
+            //    //可以添加多个子项到图文区，如下添加可以选一个或多个添加（注意点：调用添加子项到图文区域这些方法前都必须要先调用LV_AddImageTextArea）
+            //    if (la.Area_type == 1 || la.Area_type == 5 || la.Area_type == 6)
+            //    {
+            //        nResult = LedDll.LV_AddMultiLineTextToImageTextArea(hProgram, 1, la.Id, LedDll.ADDTYPE_STRING, "这是一个测试文本", ref FontProp, ref PlayProp, la.Multi_nAlignment, la.Multi_IsVCenter);
+            //        if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
+            //        {
+            //            MessageBox.Show(LedDll.LS_GetError(nResult), "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //            return;
+            //        }
+            //    }
+            //    if (la.Area_type == 2)
+            //    {
+            //        nResult = LedDll.LV_AddSingleLineTextToImageTextArea(hProgram, 1, la.Id, LedDll.ADDTYPE_STRING, "这是另一个测试文本", ref FontProp, ref PlayProp);
+            //        if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
+            //        {
+            //            MessageBox.Show(LedDll.LS_GetError(nResult), "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //            return;
+            //        }
+            //    }
+            //    #region 数字时钟
+            //    if (la.Area_type == 3)
+            //    {
+            //        LedDll.DIGITALCLOCKAREAINFO DigitalClockAreaInfo = new LedDll.DIGITALCLOCKAREAINFO();
+            //        int dateformat1 = Convert.ToInt32(ConfigurationManager.AppSettings["DateFormat1"].ToString());
+            //        int timeformat1 = Convert.ToInt32(ConfigurationManager.AppSettings["TimeFormat1"].ToString());
+
+            //        DigitalClockAreaInfo.ShowStrFont = FontProp;
+            //        if (dateformat1 >= 0 && dateformat1 < 8)
+            //        {
+            //            DigitalClockAreaInfo.DateFormat = dateformat1;
+            //            DigitalClockAreaInfo.IsMutleLineShow = 1;
+            //            DigitalClockAreaInfo.IsShowYear = 1;
+            //            DigitalClockAreaInfo.IsShowMonth = 1;
+            //            DigitalClockAreaInfo.IsShowDay = 1;
+            //        }
+            //        if (timeformat1 >= 0 && timeformat1 < 7)
+            //        {
+            //            DigitalClockAreaInfo.TimeFormat = timeformat1;
+            //            DigitalClockAreaInfo.IsShowHour = 1;
+            //            DigitalClockAreaInfo.IsShowMinute = 1;
+            //            DigitalClockAreaInfo.IsShowSecond = 1;
+            //            DigitalClockAreaInfo.IsMutleLineShow = 1;
+            //        }
+            //        LedDll.LV_AdjustTime(ref CommunicationInfo);
+            //        nResult = LedDll.LV_AddDigitalClockArea(hProgram, 1, 6, ref AreaRect, ref DigitalClockAreaInfo);//注意区域号不能一样，详见函数声明注示
+
+            //        if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
+            //        {
+            //            //LEDErrorControl(nResult);
+            //            return;
+            //        }
+            //    }
+            //    if (la.Area_type == 4)
+            //    {
+            //        LedDll.DIGITALCLOCKAREAINFO DigitalClockAreaInfo = new LedDll.DIGITALCLOCKAREAINFO();
+            //        int dateformat2 = Convert.ToInt32(ConfigurationManager.AppSettings["DateFormat2"].ToString());
+            //        int timeformat2 = Convert.ToInt32(ConfigurationManager.AppSettings["TimeFormat2"].ToString());
+            //        DigitalClockAreaInfo.ShowStrFont = FontProp;
+            //        if (dateformat2 >= 0 && dateformat2 < 8)
+            //        {
+            //            DigitalClockAreaInfo.DateFormat = dateformat2;
+            //            DigitalClockAreaInfo.IsMutleLineShow = 1;
+            //            DigitalClockAreaInfo.IsShowYear = 1;
+            //            DigitalClockAreaInfo.IsShowMonth = 1;
+            //            DigitalClockAreaInfo.IsShowDay = 1;
+            //        }
+            //        if (timeformat2 >= 0 && timeformat2 < 7)
+            //        {
+            //            DigitalClockAreaInfo.TimeFormat = timeformat2;
+            //            DigitalClockAreaInfo.IsShowHour = 1;
+            //            DigitalClockAreaInfo.IsShowMinute = 1;
+            //            DigitalClockAreaInfo.IsShowSecond = 1;
+            //            DigitalClockAreaInfo.IsMutleLineShow = 1;
+            //        }
+            //        LedDll.LV_AdjustTime(ref CommunicationInfo);
+            //        nResult = LedDll.LV_AddDigitalClockArea(hProgram, 1, 7, ref AreaRect, ref DigitalClockAreaInfo);//注意区域号不能一样，详见函数声明注示
+            //    }
+            //    if (la.Area_type == 5)
+            //    {
+            //        int aid = la.Id;
+            //        LedDll.CLOCKAREAINFO DigitalClockAreaInfo = new LedDll.CLOCKAREAINFO();
+            //        DigitalClockAreaInfo.ClockType = 0;
+            //        DigitalClockAreaInfo.DateFormat = 1;
+            //        DigitalClockAreaInfo.HourMarkColor = 1;
+            //        DigitalClockAreaInfo.HourMarkType = 0;
+            //        DigitalClockAreaInfo.HourMarkWidth = 2;
+            //        DigitalClockAreaInfo.MiniteMarkColor = LedDll.COLOR_RED;
+            //        DigitalClockAreaInfo.MiniteMarkType = 0;
+            //        DigitalClockAreaInfo.MiniteMarkWidth = 1;
+            //        DigitalClockAreaInfo.HourMarkColor = LedDll.COLOR_RED;
+            //        DigitalClockAreaInfo.MinutePointerColor = LedDll.COLOR_RED;
+            //        DigitalClockAreaInfo.SecondPointerColor = LedDll.COLOR_RED;
+            //        DigitalClockAreaInfo.MinutePointerWidth = 2;
+            //        DigitalClockAreaInfo.HourPointerWidth = 3;
+            //        DigitalClockAreaInfo.SecondPointerWidth = 1;
+            //        LedDll.LV_AdjustTime(ref CommunicationInfo);
+            //        nResult = LedDll.LV_AddClockArea(hProgram, 1, 8, ref AreaRect, ref DigitalClockAreaInfo);//注意区域号不能一样，详见函数声明注示
+            //        if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
+            //        {
+            //            //LEDErrorControl(nResult);
+            //            return;
+            //        }
+            //    }
+            //    #endregion
+            //}
+            //nResult = LedDll.LV_Send(ref CommunicationInfo, hProgram);//发送，见函数声明注示
+            //LedDll.LV_DeleteProgram(hProgram);//删除节目内存对象，详见函数声明注示
+            //if (nResult != 0)//如果失败则可以调用LV_GetError获取中文错误信息
+            //    MessageBox.Show(LedDll.LS_GetError(nResult), "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //else
+            //    MessageBox.Show("LED发送成功", "提醒", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         private void label4_ClickAsync(object sender, EventArgs e)
         {
-            workerService.Ledcontrol(workerService.GetLEDInfo(), "", 3);
+            //workerService.LedWorkGroupControl(workerService.GetLEDInfo(), "", 3);
+            if (CommonUtil.GetConfigValue("mode") != "local")
+                workerService.Ledcontrol(workerService.GetLEDInfo(), "", 3);
+            else
+                MessageBox.Show("请将配置文件mode替换成非local后再试！", "提醒", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private void timer7_Tick(object sender, EventArgs e)
         {
             if (CommonUtil.GetConfigValue("mode") != "local")
                 workerService.Ledcontrol(workerService.GetLEDInfo(), "", 3);
+            //workerService.LedWorkGroupControl(workerService.GetLEDInfo(), "", 3);
         }
 
         private void GetWeatherAsync()
@@ -1150,7 +1426,9 @@ namespace LedScreen
                 response = (System.Net.HttpWebResponse)request.GetResponse();
                 System.IO.StreamReader myreader = new System.IO.StreamReader(response.GetResponseStream(), Encoding.UTF8);
                 string responseText = myreader.ReadToEnd();
-                Console.WriteLine("返回：" + responseText);
+
+
+                //Console.WriteLine("天气返回：" + responseText);
                 JObject googleSearch = JObject.Parse(responseText);
 
                 // get JSON result objects into a list
@@ -1309,6 +1587,57 @@ namespace LedScreen
         private void timer8_Tick(object sender, EventArgs e)
         {
             this.timenow.Text = DateTime.Now.ToString("T");
+        }
+
+        private void slogen_ClickAsync(object sender, EventArgs e)
+        {
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Referer", ConfigurationManager.AppSettings["referer"].ToString());
+                List<KeyValuePair<String, String>> paramList = new List<KeyValuePair<String, String>>();
+                paramList.Add(new KeyValuePair<string, string>("userName", ConfigurationManager.AppSettings["user"].ToString()));
+                paramList.Add(new KeyValuePair<string, string>("password", ConfigurationManager.AppSettings["pwd"].ToString()));
+                HttpResponseMessage response = new HttpResponseMessage();
+                Task<HttpResponseMessage> Taskresponse = client.PostAsync(new Uri(ConfigurationManager.AppSettings["loginURL"].ToString()), new FormUrlEncodedContent(paramList));
+                string res = Taskresponse.Result.Content.ReadAsStringAsync().Result;
+
+                Token t = JsonConvert.DeserializeObject<Token>(res);
+                string postURL = ConfigurationManager.AppSettings["postCountURL"].ToString();
+                string data = JObject.FromObject(new
+                {
+                    userInfo = new
+                    {
+                        projectName = ConfigurationManager.AppSettings["prorealname"].ToString()
+                    }
+                }).ToString();
+                HttpContent hc = new StringContent(data);
+
+                hc.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                hc.Headers.Add("token", t.token);
+
+                HttpResponseMessage content = client.PostAsync(postURL, hc).Result;
+                Task<string> Tasktask = content.Content.ReadAsStringAsync();
+
+                try
+                {
+                    JObject jj = JObject.Parse(Tasktask.Result);
+
+                    //Console.WriteLine("项目人数：" + jj["record"].ToString());
+                    //updateAsyncData("GetProjectCountInfoAsync", "项目人数：" + jj["record"].ToString());
+                }
+                catch (Exception ex)
+                {
+                    //Console.WriteLine("项目人数：0");
+                    Console.WriteLine("数据解析错误" + ex.Message);
+                }
+            }
+        }
+
+        private void autoUpdateOnlineData_Tick(object sender, EventArgs e)
+        {
+            if (worker.IsBusy)
+                return;
+            worker.RunWorkerAsync();
         }
     }
 

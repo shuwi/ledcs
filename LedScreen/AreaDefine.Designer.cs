@@ -400,7 +400,8 @@
             "请选择",
             "多行文本输入",
             "单行文本输入",
-            "数字时钟",
+            "数字日期",
+            "数字时间",
             "模拟时钟"});
             this.areaType.Location = new System.Drawing.Point(142, 87);
             this.areaType.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);

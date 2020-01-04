@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Data.SQLite;
 using System.Drawing;
 using System.IO;
 using System.IO.Ports;
@@ -93,16 +94,18 @@ namespace LedScreen
             this.nowoutjob = nowoutjob;
         }
 
-        public void Sp_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
+        public void Sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try
             {
                 int i = this.MySerialPort.BytesToRead;
+                Console.WriteLine("串口数据Sp_DataReceived：{0}", i);
                 if (i > 0)
                 {
                     try
                     {
                         string message = this.MySerialPort.ReadLine();
+                        Console.WriteLine("串口读取到的数据：{0}", message);
                         this.MControl.Invoke(interfaceUpdataHandle, message);
 
                     }
@@ -112,14 +115,15 @@ namespace LedScreen
                     }
                 }
             }
-            catch
+            catch(Exception ex)
             {
-
+                Console.WriteLine("串口读取异常：{0}", ex.StackTrace);
             }
         }
 
         public void UpdateSerialPortData(String message)
         {
+            Console.WriteLine("串口数据UpdateSerialPortData：{0}", message);
             try
             {
                 if (message.IndexOf("\r") == -1)
@@ -140,7 +144,7 @@ namespace LedScreen
                     int len = message.Length;
                     message = message.Substring(2, len - 2);
                 }
-
+                Console.WriteLine("最终：{0}", message);
             }
             catch (Exception)
             {
@@ -151,17 +155,21 @@ namespace LedScreen
             switch (this.Tag)
             {
                 case 1:
+                    //GetUserInfo(message, ConfigurationManager.AppSettings["prorealname"].ToString(), 1);
                     getUserInfo(message, 1);
                     ledcheckInfo(ConfigurationManager.AppSettings["prorealname"].ToString(), message, 1);
+                    //workerService.LedWorkGroupControl(workerService.GetLEDInfo(), "", 3);
                     UserInOut(message, 1);
-                    Console.WriteLine("进场");
+                    //Console.WriteLine(message + "进场");
                     break;
                 case 2:
+                    //GetUserInfo(message, ConfigurationManager.AppSettings["prorealname"].ToString(), 0);
                     getUserInfo(message, 0);
                     ledcheckInfo(ConfigurationManager.AppSettings["prorealname"].ToString(), message, 0);
+                    //workerService.LedWorkGroupControl(workerService.GetLEDInfo(), "", 3);
                     UserInOut(message, 0);
-                    Console.WriteLine(workerService.GetJobCountLEDInfo());
-                    Console.WriteLine("离场");
+                    //Console.WriteLine(workerService.GetJobCountLEDInfo());
+                    //Console.WriteLine(message + "离场");
                     break;
                 default:
                     MessageBox.Show(message);
@@ -172,12 +180,13 @@ namespace LedScreen
 
         public void getUserInfo(string message, int type)
         {
-
             string sql = "select * from worker where identityId = '" + message + "';";
             DataTable table = SQLiteDBHelper.ExecuteDataTable(sql);
             if (table.Rows.Count == 0)
             {
-                Console.WriteLine("查无数据，可能正在远程获取，请确保项目名和身份证号录入正确！");
+                //不存在则远程获取
+                GetUserInfo(message, ConfigurationManager.AppSettings["prorealname"].ToString(), type);
+                //Console.WriteLine("查无数据，可能正在远程获取，请确保项目名和身份证号录入正确！");
                 return;
             }
             DataRow row = table.Rows[0];
@@ -200,7 +209,7 @@ namespace LedScreen
             u.info = userInfo;
             u.photo = base64;
             this.lstBoxWorker.Items.Insert(0, u);
-            
+
             if (type == 1)
             {
                 this.inuser.BackgroundImage = b;
@@ -210,7 +219,8 @@ namespace LedScreen
                 this.nowinjob.Text = row["job"].ToString();
                 this.nowintime.Text = DateTime.Now.ToString("HH:mm");
             }
-            else {
+            else
+            {
                 this.outuser.BackgroundImage = b;
                 this.nowoutname.Text = row["username"].ToString();
                 this.nowoutdate.Text = DateTime.Now.ToString("MM月dd日");
@@ -227,8 +237,10 @@ namespace LedScreen
         public void ledcheckInfo(string proname, string identityId, int checktype)
         {
             GetUserInfo(identityId, proname, checktype);
-            string sql = "select * from worker where identityId = '" + identityId + "';";
-            DataTable table = SQLiteDBHelper.ExecuteDataTable(sql);
+            string sql = "select * from worker where identityId = @identityId;";
+            SQLiteParameter[] parameters = { new SQLiteParameter("@identityId", DbType.String) };
+            parameters[0].Value = identityId;
+            DataTable table = SQLiteDBHelper.ExecuteDataTable(sql, parameters);
             if (table.Rows.Count > 0)
             {
                 DataRow row = table.Rows[0];
@@ -257,7 +269,7 @@ namespace LedScreen
             try
             {
                 string task = await CommonUtil.GetResponseAsync(postURL, data);
-            
+
                 JObject jj = JObject.Parse(task);
                 UserInfo v = jj["items"].ToObject<UserInfo>();
                 if (null == v.userId)
@@ -279,7 +291,7 @@ namespace LedScreen
         {
             using (var client = new HttpClient())
             {
-                DataTable dt = SQLiteDBHelper.ExecuteDataTable("select * from worker where identityId = '" + ui.userId + "';");
+                DataTable dt = SQLiteDBHelper.ExecuteDataTable("select * from worker where identityId = '" + ui.userId + "'");
                 DataRow row = null;
                 if (dt.Rows.Count > 0)
                     row = dt.Rows[0];
@@ -287,34 +299,66 @@ namespace LedScreen
                 ///本地已有数据则更新工人状态
                 if (null != row)
                 {
-                    string sql = string.Format("update worker set checkinState = {0},checkinTime = '{1}',job='{2}',groupname='{3}' where identityId='{4}';", checktype, DateTime.Now.ToString("yyyy-MM-dd"), ui.workKindName, ui.projectName, ui.userId);
-                    SQLiteDBHelper.ExecuteNonQuery(sql);
+                    string sql = "update worker set checkinState = @checkinState,checkinTime = @checkinTime,job = @job,groupname = @groupname,classNo = @classNo where identityId = @identityId";
+                    SQLiteParameter[] paras = {
+                        new SQLiteParameter("@checkinState", DbType.String),
+                        new SQLiteParameter("@checkinTime", DbType.String),
+                        new SQLiteParameter("@job", DbType.String),
+                        new SQLiteParameter("@groupname", DbType.String),
+                        new SQLiteParameter("@classNo", DbType.String),
+                        new SQLiteParameter("@identityId", DbType.String)
+                    };
+                    paras[0].Value = checktype;
+                    paras[1].Value = DateTime.Now.ToString("yyyy-MM-dd");
+                    paras[2].Value = ui.workKindName;
+                    paras[3].Value = ui.projectName;
+                    paras[4].Value = ui.classNo;
+                    paras[5].Value = ui.userId;
+                    SQLiteDBHelper.ExecuteNonQuery(sql, paras);
                     return;
                 }
-                string insertsql = string.Format("insert into worker(identityId,username,contact,job,groupname,addtime,checkinState,checkinTime,identityPhoto)values('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}');",
-                    ui.userId,
-                    ui.userName,
-                    ui.mobile,
-                    ui.workKindName,
-                    ui.projectName,
-                    ui.createTime,
-                    checktype,
-                    DateTime.Now.ToString("yyyy-MM-dd"),
-                    ui.photo
-                    );
-                if (SQLiteDBHelper.ExecuteNonQuery(insertsql) > 0)
+                string insertsql = string.Format(@"insert into worker(identityId,username,contact,job,groupname,addtime,checkinState,checkinTime,identityPhoto,classNo)
+                                                                values(@identityId,@username,@contact,@job,@groupname,@addtime,@checkinState,@checkinTime,@identityPhoto,@classNo)");
+                SQLiteParameter[] parameters = {
+                    new SQLiteParameter("@identityId", DbType.String),
+                    new SQLiteParameter("@username", DbType.String),
+                    new SQLiteParameter("@contact", DbType.String),
+                    new SQLiteParameter("@job", DbType.String),
+                    new SQLiteParameter("@groupname", DbType.String),
+                    new SQLiteParameter("@addtime", DbType.String),
+                    new SQLiteParameter("@checkinState", DbType.Int32),
+                    new SQLiteParameter("@checkinTime", DbType.String),
+                    new SQLiteParameter("@identityPhoto", DbType.String),
+                    new SQLiteParameter("@classNo", DbType.String)
+                };
+                parameters[0].Value = ui.userId;
+                parameters[1].Value = ui.userName;
+                parameters[2].Value = ui.mobile;
+                parameters[3].Value = ui.workKindName;
+                parameters[4].Value = ui.projectName;
+                parameters[5].Value = ui.createTime;
+                parameters[6].Value = checktype;
+                parameters[7].Value = DateTime.Now.ToString("yyyy-MM-dd");
+                parameters[8].Value = ui.photo;
+                parameters[9].Value = ui.classNo;
+                if (SQLiteDBHelper.ExecuteNonQuery(insertsql, parameters) > 0)
                     Console.WriteLine("新增用户成功");
             }
         }
 
         private void UserInOut(String userid, int checktype)
         {
-            string insertsql = string.Format("insert into workerinout(identityId,checkinState,checkinTime)values('{0}',{1},'{2}');",
-                    userid,
-                    checktype,
-                    DateTime.Now.ToString("yyyy-MM-dd")
-                    );
-            if (SQLiteDBHelper.ExecuteNonQuery(insertsql) > 0)
+            string insertsql = "insert into workerinout(identityId,checkinState,checkinTime)values(@identityId,@checkinState,@checkinTime);";
+            SQLiteParameter[] parameters = {
+                new SQLiteParameter("@identityId", DbType.String),
+                new SQLiteParameter("@checkinState", DbType.Int32),
+                new SQLiteParameter("@checkinTime", DbType.String)
+            };
+            parameters[0].Value = userid;
+            parameters[1].Value = checktype;
+            parameters[2].Value = DateTime.Now.ToString("yyyy-MM-dd");
+
+            if (SQLiteDBHelper.ExecuteNonQuery(insertsql, parameters) > 0)
                 Console.WriteLine("新增用户考勤信息成功");
         }
 

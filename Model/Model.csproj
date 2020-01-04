@@ -58,11 +58,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClassCount.cs" />
     <Compile Include="LedDll.cs" />
     <Compile Include="LedInfo.cs" />
     <Compile Include="LoopUser.cs" />
     <Compile Include="Module.cs" />
     <Compile Include="ModuleInfo.cs" />
+    <Compile Include="Pin.cs" />
     <Compile Include="Record.cs" />
     <Compile Include="ResponseWorker.cs" />
     <Compile Include="SettingInfo.cs" />

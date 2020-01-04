@@ -141,8 +141,6 @@ namespace LedScreen
                 MessageBox.Show("串口保存成功！");
                 this.DialogResult = DialogResult.OK;
                 this.Close();
-            
-            
         }
 
 

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DAO;
 using Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -90,6 +92,13 @@ namespace LedScreen
               tag integer
             )
         ";
+        public static string asyncdatasql = @"
+            CREATE TABLE IF NOT EXISTS asyncdata (
+              id integer NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+              functionname varchar(255) NOT NULL,
+              res TEXT NOT NULL
+            )
+        ";
         /// <summary>
         /// 异步网络请求数据
         /// </summary>
@@ -102,18 +111,24 @@ namespace LedScreen
             {
                 using (var client = new HttpClient())
                 {
-                    List<KeyValuePair<String, String>> paramList = new List<KeyValuePair<String, String>>();
-                    paramList.Add(new KeyValuePair<string, string>("userName", "Ledjk"));
+                    client.DefaultRequestHeaders.Add("Referer", GetConfigValue("referer"));
+                    List<KeyValuePair<string, string>> paramList = new List<KeyValuePair<string, string>>();
+                    paramList.Add(new KeyValuePair<string, string>("userName", GetConfigValue("user")));
                     paramList.Add(new KeyValuePair<string, string>("password", GetConfigValue("pwd")));
                     HttpResponseMessage response = new HttpResponseMessage();
-                    response = await client.PostAsync(new Uri(GetConfigValue("loginURL")), new FormUrlEncodedContent(paramList));
+                    HttpContent ct = new FormUrlEncodedContent(paramList);
+                    response = await client.PostAsync(new Uri(GetConfigValue("loginURL")), ct);
+                    //Console.WriteLine(string.Format("登录请求：{0}", ct));
+                    
                     string res = response.Content.ReadAsStringAsync().Result;
+                    //Console.WriteLine(string.Format("登录结果：{0}", res));
                     Token t = JsonConvert.DeserializeObject<Token>(res);
+                    //Console.WriteLine("data = {0}", data);
                     HttpContent hc = new StringContent(data);
                     hc.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                     hc.Headers.Add("token", t.token);
                     HttpResponseMessage content = client.PostAsync(postURL, hc).Result;
-                    Console.WriteLine("开始异步访问网络...");
+                    //Console.WriteLine("开始异步访问网络...");
                     string task = await content.Content.ReadAsStringAsync();
                     return task;
                 }
@@ -124,9 +139,45 @@ namespace LedScreen
                 return string.Empty;
             }
         }
+        /// <summary>
+        /// 持久化需要线上获取的统计信息
+        /// </summary>
+        /// <param name="functionname"></param>
+        /// <param name="res"></param>
+        public static void updateAsyncData(string functionname, string res)
+        {
+
+            DataTable dt = SQLiteDBHelper.ExecuteDataTable(string.Format("select * from asyncdata where functionname = '{0}'", functionname));
+            Console.WriteLine(string.Format("select * from asyncdata where functionname = '{0}'", functionname));
+            DataRow row = null;
+            if (dt.Rows.Count > 0)
+                row = dt.Rows[0];
+            if (null == row)
+            {
+                string insertsql = string.Format("insert into asyncdata(functionname,res)values('{0}','{1}')",
+                    functionname,
+                    res
+                    );
+                if (SQLiteDBHelper.ExecuteNonQuery(insertsql) > 0)
+                {
+                    Console.WriteLine("新增模板记录成功！");
+                }
+            }
+            else
+            {
+                string insertsql = string.Format("update asyncdata set res = '{0}' where functionname = '{1}'",
+                    res, functionname
+                    );
+                if (SQLiteDBHelper.ExecuteNonQuery(insertsql) > 0)
+                {
+                    //Console.WriteLine("修改模板记录成功！");
+                }
+            }
+
+        }
         public static string GetConfigValue(string key)
         {
-            return System.Configuration.ConfigurationManager.AppSettings[key].ToString();
+            return ConfigurationManager.AppSettings[key].ToString();
         }
 
         public static bool IsNumeric(string value)

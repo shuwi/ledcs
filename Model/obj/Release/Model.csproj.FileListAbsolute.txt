@@ -6,7 +6,13 @@ D:\svn\LedScreen\Model\obj\Release\Model.pdb
 D:\svn\LedScreen\Model\obj\Release\Model.csprojAssemblyReference.cache
 D:\git\ledcs\Model\bin\Release\Model.dll
 D:\git\ledcs\Model\bin\Release\Model.pdb
-D:\git\ledcs\Model\obj\Release\Model.csprojAssemblyReference.cache
 D:\git\ledcs\Model\obj\Release\Model.csproj.CoreCompileInputs.cache
 D:\git\ledcs\Model\obj\Release\Model.dll
 D:\git\ledcs\Model\obj\Release\Model.pdb
+D:\git\ledcs\Model\obj\Release\Model.csprojAssemblyReference.cache
+D:\git\LED-SMZ\Model\bin\Release\Model.dll
+D:\git\LED-SMZ\Model\bin\Release\Model.pdb
+D:\git\LED-SMZ\Model\obj\Release\Model.csproj.CoreCompileInputs.cache
+D:\git\LED-SMZ\Model\obj\Release\Model.dll
+D:\git\LED-SMZ\Model\obj\Release\Model.pdb
+D:\git\LED-SMZ\Model\obj\Release\Model.csprojAssemblyReference.cache
